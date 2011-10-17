@@ -11,10 +11,16 @@
 
 		elements,
 
-		GanttChartView = new Backbone.View({
+		fieldNames = {
+			id: "ID",
+			name: "Item name",
+			graphic: "1 2 3 4"
+		},
+
+		GanttChartView = Backbone.View.extend({
 			elements: [],
 
-			rowOrder: ["name", "graphic"],
+			fieldOrder: ["id", "name", "graphic"],
 
 			initialize: function () {
 				this.render();
@@ -28,7 +34,36 @@
 			},
 
 			render: function () {
-				$(this.el).html(""); // make it a adjustable table view
+				var this_ = this,
+					html = "<table>";
+
+				html += "<tr>";
+
+				_(this_.fieldOrder).each(function (field) {
+					html += "<th>" + fieldNames[field] + "</th>";
+				});
+
+				html += "</tr>";
+
+				_(elements).each(function (element) {
+					html += "<tr>";
+
+					_(this_.fieldOrder).each(function (field) {
+						html += "<td>";
+
+						if (element.hasOwnProperty(field)) {
+							html += element[field];
+						}
+
+						html += "</td>";
+					});
+
+					html += "</tr>";
+				});
+
+				html += "</table>";
+
+				$(this.el).html(html); // make it a adjustable table view
 				return this;
 			}
 		});
@@ -43,8 +78,8 @@
         return o;
 	};
 
-	_(Greasy.prototype).extend({
-		setElements(newelements) {
+	_(JSGanttChart.prototype).extend({
+		setElements: function (newelements) {
 			elements = newelements;
 		},
 
