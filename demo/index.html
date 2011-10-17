@@ -1,0 +1,39 @@
+<html>
+<head>
+	<script src="../lib/jquery.js"></script>
+	<script src="../lib/underscore.js"></script>
+	<script src="../lib/backbone.js"></script>
+	<script src="../jsganttchart.js"></script>
+	<script>
+		var gantt = JSGanttChart.create();
+
+		gantt.setElements([
+			{
+				id: "meeting1",
+				name: "Supervisor meeting"
+				startOn: new Date(),
+				duration: 1
+			},
+			{
+				id: "brief",
+				name: "Project Brief",
+				predecessors: ["meeting1"],
+				startOn: new Date(),
+				duration: 7, // Or endOn: date
+				// critical: true
+				// slackDuration: 4 or slackEnd: date
+				elements: [
+					/* more elements */
+				]
+			}
+		]);
+
+		jQuery(window).ready(function () {
+			jQuery("#container").append(gantt.getDOM());
+		});
+	</script>
+</head>
+<body>
+
+</body>
+</html>
