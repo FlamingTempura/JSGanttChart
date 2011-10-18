@@ -129,7 +129,7 @@
 
 		function showJSONEditForm () {
 			jQuery("#jsonform").fadeIn();
-			jQuery("#jsonform #f_json").val(JSON.stringify(gantt.getJSON()));
+			jQuery("#jsonform #f_json").val(JSON.stringify(gantt.getJSON(), undefined, "    "));
 		}
 
 		gantt.bind("row_click", function (e, model) {
