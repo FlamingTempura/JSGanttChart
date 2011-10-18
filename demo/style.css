@@ -46,7 +46,7 @@ table {
 		position: relative;
 	}
 	tr.child, .row.child .cell {
-		background: #eee;
+		background: #efe;
 	}
 		.dates {
 			font-weight: bold;
@@ -59,7 +59,7 @@ table {
 		}
 
 		.cell.weekend {
-			background: #f7f7f7;
+			background: #f7f7f7 !important;
 		}
 		.cell {
 			width: 24px;
