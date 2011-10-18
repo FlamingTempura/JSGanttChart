@@ -34,7 +34,7 @@
 				{
 					id: "meeting1",
 					name: "Supervisor meeting",
-					startDate: "5 October 2011 11:00",
+					startDate: "1 October 2011 11:00",
 					percentageDone: 100,
 					resources: [ "programmer", "supervisor", "cosupervisor" ]
 				},
@@ -48,6 +48,7 @@
 					slackDuration: 4, // or slackEndDate: date
 					elements: [
 						{
+							predecessors: ["brief"],
 							id: "prestudy2",
 							name: "Prestudy",
 							startDate: "18 October 2011",
@@ -65,6 +66,7 @@
 					estimatedHours: 10
 				},
 				{
+							predecessors: ["brief"],
 					id: "prestudy",
 					name: "Prestudy",
 					startDate: "18 October 2011",

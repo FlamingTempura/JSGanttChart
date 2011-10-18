@@ -96,7 +96,6 @@
             model: GanttElementModel,
 
             initialize: function () {
-                console.log("HJ")
                 var this_ = this,
                     triggerChange = function () { this_.trigger("change"); };
                 
@@ -236,7 +235,6 @@
 
                 // Determine when the gantt chart starts and finishes
                 this.options.collection.each(function (model) {
-                    console.log(model.get("startDate"))
                     var startDate = model.get("startDate").getTime(),
                         endDate = model.get("endDate").getTime();
                     firstDate = (!firstDate || startDate < firstDate) ? startDate : firstDate;
@@ -285,7 +283,8 @@
                         elementView = new GanttElementView({ 
                             model: model,
                             firstDate: firstDate,
-                            types: this_.options.types
+                            types: this_.options.types,
+                            collection: this_.options.collection
                         }),
                         dateIterator = new Date(firstDate.getTime()),
                         elementHolder = $('<div class="gantt-element-holder"></div>');
@@ -327,7 +326,8 @@
             },
 
             render: function () {
-                var model = this.options.model,
+                var this_ = this,
+                    model = this.options.model,
                     noOfDays = Math.round((model.get("endDate").getTime() - model.get("startDate").getTime()) / (24 * 60 * 60 * 1000)),
                     dayFromStart = Math.round((model.get("startDate").getTime() - this.options.firstDate.getTime()) / (24 * 60 * 60 * 1000)),
                     el;
@@ -349,6 +349,17 @@
                     noOfDays = Math.round((model.get("slackEndDate").getTime() - model.get("endDate").getTime()) / (24 * 60 * 60 * 1000)),
                     el.css({ left: "100%", width: noOfDays * 25 });
                     this.$el.append(el);
+                }
+
+                if (model.has("predecessors")) {
+                    $.fn.append.apply(this.$el, _(model.get("predecessors")).map(function (predecessor) {
+                        var predecessorModel = this_.options.collection.get(predecessor);
+                        el = jQuery('<div class="arrowline"><div class="arrowhead"></div></div>');
+                        noOfDays = Math.round((model.get("startDate").getTime() - predecessorModel.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
+                        var noOfRows = parseInt(model.cid.substr(1)) - parseInt(predecessorModel.cid.substr(1));
+                        el.css({ right: "100%", bottom: "100%", width: noOfDays * 25, height: noOfRows * 19 - 7 });
+                        return el;
+                    }));
                 }
 
                 return this;

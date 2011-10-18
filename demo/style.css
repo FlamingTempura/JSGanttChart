@@ -46,6 +46,31 @@ th {
 	tr.child, .row.child .cell {
 		background: #efe;
 	}
+
+	.arrowline {
+		position: absolute;
+		border-right: 1px solid red;
+		border-top: 1px solid red;
+		z-index: 15;
+		margin-right: -5px;
+		padding-left: 5px;
+	}
+
+	.arrowhead {
+		position: absolute;
+		right: -6px;
+		bottom: 0;
+		/*width: 10px;
+		height: 5px;*/
+
+		border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid red;
+
+        width: 0;
+        height: 0;
+	}
+
 		.dates {
 			font-weight: bold;
 		}
