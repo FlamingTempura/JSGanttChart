@@ -1,0 +1,126 @@
+body, table {
+	font-family: verdana, sans-serif;
+	font-size: 12px;
+	color: #333;
+}
+td, th, .cell {
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+	height: 14px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+td, th {
+	margin: 0;
+	padding-left: 7px;
+	padding-right: 7px;
+}
+table {
+	border-top: 1px solid #ddd;
+	border-left: 1px solid #ddd;
+	vertical-align: top;
+}
+.gantt-container {
+	white-space: nowrap;
+}
+.gantt-data-table {
+	display: inline-block;
+	margin-top: 19px;
+}
+.gantt-table {
+	display: inline-block;
+	border-top: 1px solid #ddd;
+	vertical-align: top;
+	overflow-x: scroll;
+	white-space: nowrap;
+	width: 1000px;
+}
+	.bl {
+		border-left: 1px solid #ddd;
+		margin-left: -1px;
+	}
+	.row {
+		position: relative;
+	}
+		.dates {
+			font-weight: bold;
+		}
+		.cell {
+			width: 24px;
+			display: inline-block;
+			text-align: center;
+		}
+		.gantt-element {
+			background: blue;
+			position: absolute;
+			top: 2px;
+			height: 14px;
+			z-index: 10;
+		}
+
+		.done {
+			height: 100%;
+			background: rgba(0, 0, 0, 0.5);
+		}
+
+		.donetext {
+			font-size: 10px;
+			font-weight: bold;
+			text-shadow: black 1px 1px 4px;
+			color: white;
+			position: absolute;
+			z-index: 20;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			text-align: center;
+			line-height: 140%;
+		}
+
+		.slack {
+			position: absolute;
+			top: 5px;
+			height: 4px;
+			background: black;
+		}
+
+		.gantt-element.critical {
+			background: red;
+		}
+
+		.gantt-container .row, .gantt-container tr {
+			MozUserSelect: none;
+			cursor: pointer;
+		}
+	
+	.gantt-key > div {
+		margin-bottom: 2px;
+	}
+
+	.gantt-key .color {
+		width: 20px;
+		height: 14px;
+		display: inline-block;
+		margin: 0 2px 0 0;
+		vertical-align: top;
+	}
+
+
+/* Editor elements */
+#editform {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: none;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 1000;
+}
+#editform .form {
+	margin: 80px auto;
+	background: white;
+	width: 300px;
+	padding: 10px;
+}

@@ -5,25 +5,92 @@
 
 		jsgtThis = undefined,
 
-		JSGanttChart = root.JSGanttChart = function () {
+		ganttView,
+		
+		monthNames = [ "January", "February", "March", "April", "May", "June",
+    			"July", "August", "September", "October", "November", "December" ],
+
+		JSGanttChart = root.JSGanttChart = function (options) {
 			jsgtThis = this;
+
+			_(options).defaults({
+				displayKey: true,
+				fields: [ "name", "resources", "percentageDone", "estimatedHours" ]
+			})
+
+			var collection = new GanttElementCollection(options.elements);
+
+			ganttView = new GanttContainerView({
+				collection: collection,
+				displayKey: options.displayKey,
+				fields: options.fields,
+				types: options.types
+			});
 		},
 
 		fieldNames = {
-			id: 'ID',
-			name: 'Item name',
+			name: 'Project stage',
+			resources: "Resources",
+			percentageDone: "Status",
 			estimatedHours: 'Estim. Hours'
 		},
 
 		mandatoryFields = ['id', 'name', 'startDate'],
 
-
 		GanttElementModel = Backbone.Model.extend({
-			defaults: {}
+			defaults: {},
+
+			initialize: function () {
+				this.normalize();
+			},
+
+			normalize: function () {
+				var this_ = this;
+				// Ensure the element has all mandatory fields
+				_(mandatoryFields).each(function (field) {
+					if (!this_.has(field)) {
+						throw "element " + this_.get("id") + " is missing " + field + ".";
+					}
+				});
+
+				if (!_(this.get("startDate")).isDate()) {
+					this.set({ startDate: new Date(this.get("startDate")) });
+				}
+
+				if (this.has("endDate") && !_(this.get("endDate")).isDate()) {
+					this.set({ endDate: new Date(this.get("endDate")) });
+				}
+
+				if (!this.has("endDate")) {
+					this.set({ endDate: new Date(this.get("startDate").getTime()) });
+					if (this.has("duration")) {
+						this.get("endDate").setDate(this.get("startDate").getDate() + element.duration);
+						this.unset("duration");
+					} else {
+						this.get("endDate").setDate(this.get("startDate").getDate() + 1);
+					}
+				}
+
+				if (this.has("slackDuration")) {
+					var date = new Date(this.get("endDate"));
+					date.setDate(date.getDate() + this.get("slackDuration"));
+					this.set({ slackEndDate: date });
+				}
+			}
 		}),
 
 		GanttElementCollection = Backbone.Collection.extend({
-			Model: GanttElementModel
+			model: GanttElementModel,
+
+			initialize: function () {
+				console.log("HJ")
+				var this_ = this,
+					triggerChange = function () { this_.trigger("change"); };
+				
+				this.bind("add", triggerChange);
+				this.bind("remove", triggerChange);
+				this.bind("reset", triggerChange);
+			}
 		}),
 		
 		// Options:
@@ -45,12 +112,15 @@
 					collection: this.options.collection,
 					fields: this.options.fields
 				});
-				this.ganttView = new GanttTableView({ collection: this.options.collection });
+				this.ganttView = new GanttTableView({ 
+					collection: this.options.collection,
+					types: this.options.types
+				});
 				this.keyView = new KeyView({ types: this.options.types });
 				this.$el = $(this.el);
 
-				var rowClick = function (e, element) {
-					this_.trigger("row_click", e, element)
+				var rowClick = function (e, model) {
+					this_.trigger("row_click", e, model)
 				}
 
 				this.dataView.bind("row_click", rowClick);
@@ -58,16 +128,20 @@
 			},
 
 			render: function () {
-				$el.html('')
-					.append(this.dataView.el, this.keyView.el);
-				if (!this.options.displayKey) {
-					$el.append(this.keyView.el);
+				this.$el.html('')
+					.append(this.dataView.render().el, this.ganttView.render().el);
+				if (this.options.displayKey) {
+					this.$el.append(this.keyView.render().el);
 				}
 				return this;
 			}
 		}),
 
+		/* options:
+			fields
+			*/
 		DataTableView = Backbone.View.extend({
+			className: "gantt-data-table",
 			$el: undefined,
 
 			initialize: function () {
@@ -80,25 +154,28 @@
 					table = jQuery('<table cellspacing="0"></table>');
 
 				// Populate headers
-				table.append(jQuery('<tr></tr>').append(_(this_.fields).map(function (field) { 
+				table.append($.fn.append.apply(jQuery('<tr></tr>'), _(this_.options.fields).map(function (field) { 
 					return jQuery('<th>' + fieldNames[field] + '</th>'); 
 				})));
 
 				// Populate data
-				table.append(this.options.collection.map(function (element) {
-					return jQuery('<tr></tr>').append(_(this_.fields).map(function (field) {
-						return jQuery('<td>' + (element.has(field) ? element.get(field) : '') + '</td>'); 
+				$.fn.append.apply(table, this.options.collection.map(function (model) {
+					return $.fn.append.apply(jQuery('<tr></tr>'), _(this_.options.fields).map(function (field) {
+						return jQuery('<td>' + (model.has(field) ? model.get(field) : '') + '</td>'); 
 					})).click(function (e) {
-						this_.trigger("row_click", e, element);
+						this_.trigger("row_click", e, model);
 						return false; 
 					});
-				});
+				}));
 
 				this.$el.append(table);
+				
+				return this;
 			}
 		}),
 
 		GanttTableView = Backbone.View.extend({
+			className: "gantt-table",
 			$el: undefined,
 
 			initialize: function () {
@@ -108,14 +185,16 @@
 			},
 			
 			render: function () {
-				var firstDate,
+				var this_ = this,
+					firstDate,
 					lastDate,
 					dateIterator;
 
 				// Determine when the gantt chart starts and finishes
-				this.options.collection.each(function (element) {
-					var startDate = element.startDate.getTime(),
-						endDate = element.endDate.getTime();
+				this.options.collection.each(function (model) {
+					console.log(model.get("startDate"))
+					var startDate = model.get("startDate").getTime(),
+						endDate = model.get("endDate").getTime();
 					firstDate = (!firstDate || startDate < firstDate) ? startDate : firstDate;
 					lastDate = (!lastDate || endDate > lastDate) ? endDate : lastDate;
 				});
@@ -123,107 +202,113 @@
 				firstDate = new Date(firstDate);
 				lastDate = new Date(lastDate);
 
-				var container = jQuery('<div class="gantt"></div>');
-				var row = jQuery('<div class="dates"></div>');
+				var monthRow = jQuery('<div class="dates bl"></div>'),
+					dayRow = jQuery('<div class="dates"></div>'),
+					currMonth,
+					currMonthSize,
+					currMonthEl;
 
 				dateIterator = new Date(firstDate.getTime());
 				// Populate days
 				while (dateIterator <= lastDate) {
-					row.append('<div class="cell">' + dateIterator.getDate() + '</div>');
-					dateIterator.setDate(dateIterator.getDate() + 1);
-				}
-				container.append(row);
-
-				_(elements).each(function (element) {
-					row = jQuery('<div class="row"></div>');
-					row.click(function (e) { jsgtThis.trigger("row_click", e, element); })
-
-					dateIterator = new Date(firstDate.getTime());
-					while (dateIterator <= lastDate) {
-						cell = jQuery('<div class="cell"></div>');
-
-						if (element.startDate.getDate() == dateIterator.getDate() && 
-								element.startDate.getMonth() == dateIterator.getMonth() &&
-								element.startDate.getFullYear() == dateIterator.getFullYear()) {
-							var noOfDays = Math.round((element.endDate.getTime() - element.startDate.getTime()) / (24 * 60 * 60 * 1000));
-							cell.append('<div class="el" style="width:' + (noOfDays * 25)+ 'px;' + 
-								(element.type ? ' background:' + types[element.type].color + ';' : '') + '">&nbsp;</div>');
+					if (dateIterator.getMonth() != currMonth) {
+						if (currMonthEl) {
+							currMonthEl.css({ width: currMonthSize * 25 - 1 });
 						}
-						row.append(cell);
+						currMonth = dateIterator.getMonth();
+						currMonthSize = 0;
+						currMonthEl = jQuery('<div class="cell">' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</div>');
+						monthRow.append(currMonthEl);
+					}
+					dayRow.append('<div class="cell">' + dateIterator.getDate() + '</div>');
+					dateIterator.setDate(dateIterator.getDate() + 1);
+					currMonthSize = currMonthSize + 1;
+				}
+				if (currMonthEl) {
+					currMonthEl.css({ width: currMonthSize * 25 - 1 });
+				}
+				this.$el.append(monthRow, dayRow);
+
+				$.fn.append.apply(this.$el, this.options.collection.map(function (model) {
+					var row = jQuery('<div class="row"></div>'),
+						elementView = new GanttElementView({ 
+							model: model,
+							firstDate: firstDate,
+							types: this_.options.types
+						}),
+						dateIterator = new Date(firstDate.getTime());
+
+					row.append(elementView.render().el)
+						.click(function (e) { jsgtThis.trigger("row_click", e, model); });
+
+					while (dateIterator <= lastDate) {
+						row.append(jQuery('<div class="cell"></div>'));
 						dateIterator.setDate(dateIterator.getDate() + 1);
 					}
-					container.append(row);
-				});
 
-				$(this.el).append(container); // make it a adjustable table view
+					return row;
+				}));
+
 				return this;
 			}
 		}),
 
-		GanttElementView = 
-		KeyView = 
+		GanttElementView = Backbone.View.extend({
+			className: "gantt-element",
+			$el: undefined,
 
-
-
-
-
-
-
-
-
-		GanttChartView = Backbone.View.extend({
-			elements: undefined,
-
-			fieldOrder: ['id', 'name'],
-
-			setElements: function (elements) {
-				this.elements = this.normalise(_(elements).clone());
-			},
-
-			normalise: function (elements) {
-				_(elements).each(function (element) {
-					_(mandatoryFields).each(function (field) {
-						if (!element.hasOwnProperty(field)) {
-							throw "element is missing " + field + " " + element;
-						}
-					});
-
-					if (!_(element.startDate).isDate()) {
-						element.startDate = new Date(element.startDate);
-					}
-
-					if (element.hasOwnProperty("endDate") && !_(element.endDate).isDate()) {
-						element.endDate = new Date(element.endDate);
-					}
-
-					if (!element.hasOwnProperty("endDate")) {
-						element.endDate = new Date(element.startDate.getTime());
-						if (element.hasOwnProperty("duration")) {
-							element.endDate.setDate(element.startDate.getDate() + element.duration);
-						} else {
-							element.endDate.setDate(element.startDate.getDate() + 1);
-						}
-						delete element.duration;
-					}
-				});
-				return elements;
+			initialize: function () {
+				_.bindAll(this, "render");
+				this.options.model.bind("change", this.render);
+				this.$el = $(this.el);
 			},
 
 			render: function () {
-				var this_ = this,
-					firstDate,
-					lastDate,
-					dateIterator,
-					container = jQuery('<table cellspacing="0"></table>'),
-					row,
-					cell;
+				var	model = this.options.model,
+					noOfDays = Math.round((model.get("endDate").getTime() - model.get("startDate").getTime()) / (24 * 60 * 60 * 1000)),
+					dayFromStart = Math.round((model.get("startDate").getTime() - this.options.firstDate.getTime()) / (24 * 60 * 60 * 1000)),
+					el;
+					
+				this.$el.css({ left: dayFromStart * 25, width: noOfDays * 25 });
 
-				$(this.el).html('');
+				if (model.has("type")) {
+					this.$el.css({ background: this.options.types[model.get("type")].color });
+				}
 
-				
+				if (model.has("percentageDone")) {
+					el = jQuery('<div class="done"></div>');
+					el.css({ width: model.get("percentageDone") + "%" });
+					this.$el.append(el, jQuery('<div class="donetext">' + (model.get("percentageDone") < 100 ? model.get("percentageDone") + "% " : "" ) + 'done</div>'));
+				}
 
+				if (model.has("slackEndDate")) {
+					el = jQuery('<div class="slack"></div>');
+					noOfDays = Math.round((model.get("slackEndDate").getTime() - model.get("endDate").getTime()) / (24 * 60 * 60 * 1000)),
+					el.css({ left: "100%", width: noOfDays * 25 });
+					this.$el.append(el);
+				}
 
-				
+				return this;
+			}
+		}),
+
+		KeyView = Backbone.View.extend({
+			className: "gantt-key",
+			$el: undefined,
+
+			initialize: function () {
+				_.bindAll(this, "render");
+				this.$el = $(this.el);
+			},
+
+			render: function () {
+				this.$el.append("<b>Key</p>");
+
+				$.fn.append.apply(this.$el, _(this.options.types).map(function (type) {
+					return $('<div><div class="color" style="background:' + type.color + '"></div>' + type.name + '</div>');
+				}));
+
+				return this;
 			}
 		});
 
@@ -240,13 +325,9 @@
 	});
 
 	_(JSGanttChart.prototype).extend(Backbone.Events, {
-		setElements: function (newelements) {
-			elements = newelements;
-		},
+		setElements: function (newelements) {},
 
-		setTypes: function (newtypes) {
-			types = newtypes;
-		},
+		setTypes: function (newtypes) {},
 
 		setElement: function (element) {
 			_(elements).each(function (el) {
@@ -258,11 +339,8 @@
 			gc.render();
 		},
 
-		getDOM: function () {
-			gc = new GanttChartView();
-			gc.setElements(elements);
-			var el = gc.render().el;
-			return el;
+		render: function () {
+			return ganttView.render();
 		}
 	});
 

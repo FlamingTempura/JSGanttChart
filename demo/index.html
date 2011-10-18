@@ -4,162 +4,90 @@
 	<script src="../lib/underscore.js"></script>
 	<script src="../lib/backbone.js"></script>
 	<script src="../jsganttchart.js"></script>
-	<style>
-		body, table {
-			font-family: verdana, sans-serif;
-			font-size: 12px;
-			color: #333;
-		}
-		td, th, .cell {
-			border-right: 1px solid #ddd;
-			border-bottom: 1px solid #ddd;
-			height: 14px;
-			padding-top: 2px;
-			padding-bottom: 2px;
-		}
-		td, th {
-			margin: 0;
-			padding-left: 7px;
-			padding-right: 7px;
-		}
-		table {
-			border-top: 1px solid #ddd;
-			border-left: 1px solid #ddd;
-			display: inline-block;
-			vertical-align: top;
-		}
-		#container {
-			white-space: nowrap;
-		}
-		.gantt {
-			display: inline-block;
-			border-top: 1px solid #ddd;
-			vertical-align: top;
-			overflow-x: scroll;
-			white-space: nowrap;
-			width: 1000px;
-		}
-		.dates {
-			font-weight: bold;
-		}
-		.cell {
-			width: 24px;
-			display: inline-block;
-			text-align: center;
-			position: relative;
-		}
-		.el {
-			background: blue;
-			position: absolute;
-			z-index: 10;
-		}
-		.el.critical {
-			background: red;
-		}
-		#container .row, #container tr {
-			MozUserSelect: none;
-			cursor: pointer;
-		}
-
-		#editform {
-			position: fixed;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			display: none;
-			background: rgba(0, 0, 0, 0.5);
-			z-index: 1000;
-		}
-		#editform .form {
-			margin: 80px auto;
-			background: white;
-			width: 300px;
-			padding: 10px;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css">
 	<script>
-		var gantt = JSGanttChart.create();
-
-		gantt.setTypes({
-			analysis: {
-				name: "Analysis",
-				color: "yellow"
+		var gantt = JSGanttChart.create({
+			types: {
+				analysis: {
+					name: "Analysis",
+					color: "#C79810"  // yellow
+				},
+				critical: {
+					name: "Critical",
+					color: "#CC0000" // red
+				},
+				programming: {
+					name: "Programming",
+					color: "#356AA0" // blue
+				},
+				documentation: {
+					name: "Documentation",
+					color: "#FF7400" // orange
+				}
 			},
-			critical: {
-				name: "Critical",
-				color: "red"
-			},
-			programming: {
-				name: "Programming",
-				color: "blue"
-			},
-			documentation: {
-				name: "Documentation",
-				color: "orange"
-			}
+			elements: [
+				{
+					id: "meeting1",
+					name: "Supervisor meeting",
+					startDate: "5 October 2011 11:00",
+					percentageDone: 100
+				},
+				{
+					id: "brief",
+					name: "Project Brief",
+					predecessors: ["meeting1"],
+					startDate: "3 October 2011",
+					endDate: "14 October 2011 16:00",
+					type: "critical",
+					slackDuration: 4, // or slackEnd: date
+					elements: [
+						/* sub elements */
+					],
+					percentageDone: 59,
+					estimatedHours: 10
+				},
+				{
+					id: "prestudy",
+					name: "Prestudy",
+					startDate: "18 October 2011",
+					endDate: "29 October 2011",
+					type: "analysis",
+					percentageDone: 2,
+				},
+				{
+					id: "software1",
+					name: "Software development P1",
+					startDate: "20 October 2011",
+					endDate: "14 December 2011"
+				},
+				{
+					id: "study2",
+					name: "Second study",
+					startDate: "30 October 2011",
+					endDate: "1 December 2011",
+					type: "analysis"
+				},
+				{
+					id: "reviewmeeting1",
+					name: "Review meeting",
+					startDate: "13 November 2011"
+				},
+				{
+					id: "progreport",
+					name: "Progress Report",
+					startDate: "7 December 2011",
+					endDate: "14 December 2011 16:00",
+					type: "documentation"
+				},
+				{
+					id: "finalreport",
+					name: "Final Project Report",
+					startDate: "2 April 2012",
+					endDate: "2 May 2012",
+					type: "documentation"
+				}
+			]
 		});
-
-		gantt.setElements([
-			{
-				id: "meeting1",
-				name: "Supervisor meeting",
-				startDate: "5 October 2011 11:00"
-			},
-			{
-				id: "brief",
-				name: "Project Brief",
-				predecessors: ["meeting1"],
-				startDate: "3 October 2011",
-				endDate: "14 October 2011 16:00",
-				type: "critical",
-				slackDuration: 4, // or slackEnd: date
-				elements: [
-					/* sub elements */
-				],
-				percentageDone: 0.5,
-				estimatedHours: 10
-			},
-			{
-				id: "prestudy",
-				name: "Prestudy",
-				startDate: "18 October 2011",
-				endDate: "29 October 2011",
-				type: "analysis"
-			},
-			{
-				id: "software1",
-				name: "Software development P1",
-				startDate: "20 October 2011",
-				endDate: "14 December 2011"
-			},
-			{
-				id: "study2",
-				name: "Second study",
-				startDate: "30 October 2011",
-				endDate: "1 December 2011",
-				type: "analysis"
-			},
-			{
-				id: "reviewmeeting1",
-				name: "Review meeting",
-				startDate: "13 November 2011"
-			},
-			{
-				id: "progreport",
-				name: "Progress Report",
-				startDate: "7 December 2011",
-				endDate: "14 December 2011 16:00",
-				type: "documentation"
-			},
-			{
-				id: "finalreport",
-				name: "Final Project Report",
-				startDate: "2 April 2012",
-				endDate: "2 May 2012",
-				type: "documentation"
-			}
-		]);
 
 		var currElement;
 
@@ -176,7 +104,7 @@
 		});
 
 		jQuery(window).ready(function () {
-			jQuery("#container").append(gantt.getDOM());
+			jQuery("#container").append(gantt.render().el);
 
 			jQuery("#editform #f_cancel").click(function () { jQuery("#editform").fadeOut(); });
 
