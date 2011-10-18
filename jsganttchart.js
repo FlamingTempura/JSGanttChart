@@ -174,6 +174,7 @@
                 this.$el = $(this.el);
             },
             render: function () {
+                this.$el.html('');
                 var this_ = this,
                     table = jQuery('<table cellspacing="0"></table>');
 
@@ -227,6 +228,7 @@
             },
             
             render: function () {
+                this.$el.html('');
                 var this_ = this,
                     firstDate,
                     lastDate,
@@ -334,7 +336,7 @@
                     
                 this.$el.css({ left: dayFromStart * 25, width: noOfDays * 25 });
 
-                if (model.has("type")) {
+                if (model.has("type") && this.options.types[model.get("type")]) {
                     this.$el.css({ background: this.options.types[model.get("type")].color });
                 }
 

@@ -109,18 +109,23 @@
 			]
 		});
 
-		var currElement;
+		var currElementModel;
 
-		gantt.bind("row_click", function (e, element) {
+		gantt.bind("row_click", function (e, model) {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log(arguments)
+			var element = model.toJSON();
 			jQuery("#editform").fadeIn();
 			jQuery("#editform #f_id").val(element.id);
 			jQuery("#editform #f_name").val(element.name);
 			jQuery("#editform #f_start").val(element.startDate);
 			jQuery("#editform #f_end").val(element.endDate);
-			currElement = element;
+			jQuery("#editform #f_slend").val(element.slackEndDate);
+			jQuery("#editform #f_type").val(element.type);
+			jQuery("#editform #f_done").val(element.percentageDone);
+			jQuery("#editform #f_hours").val(element.hoursExpected);
+			jQuery("#editform #f_resources").val(element.resources);
+			currElementModel = model;
 		});
 
 		jQuery(window).ready(function () {
@@ -129,11 +134,17 @@
 			jQuery("#editform #f_cancel").click(function () { jQuery("#editform").fadeOut(); });
 
 			jQuery("#editform #f_submit").click(function() {
-				currElement.id = jQuery("#editform #f_id").val();
-				currElement.name = jQuery("#editform #f_name").val();
-				currElement.startDate = new Date(jQuery("#editform #f_start").val());
-				currElement.endDate = new Date(jQuery("#editform #f_end").val());
-				gantt.setElement(currElement);
+				currElementModel.set({
+					id: jQuery("#editform #f_id").val(),
+					name: jQuery("#editform #f_name").val(),
+					startDate: new Date(jQuery("#editform #f_start").val()),
+					endDate: new Date(jQuery("#editform #f_end").val()),
+					slackEndDate: new Date(jQuery("#editform #f_slend").val()),
+					type: jQuery("#editform #f_type").val(),
+					percentageDone: jQuery("#editform #f_done").val(),
+					hoursExpected: jQuery("#editform #f_hours").val(),
+					resources: jQuery("#editform #f_resources").val()
+				});
 				jQuery("#editform").fadeOut();
 			});
 		});
@@ -148,6 +159,11 @@
 				<tr><th>Name:</th><td><input id="f_name" type="text" value=""></td></tr>
 				<tr><th>Start Date:</th><td><input id="f_start" type="text" value=""></td></tr>
 				<tr><th>End Date:</th><td><input id="f_end" type="text" value=""></td></tr>
+				<tr><th>Slack End Date:</th><td><input id="f_slend" type="text" value=""></td></tr>
+				<tr><th>Type:</th><td><input id="f_type" type="text" value=""></td></tr>
+				<tr><th>Percentage Done:</th><td><input id="f_done" type="text" value=""></td></tr>
+				<tr><th>Estimated Hours:</th><td><input id="f_hours" type="text" value=""></td></tr>
+				<tr><th>Resources:</th><td><input id="f_resources" type="text" value=""></td></tr>
 				<tr><th></th><td><input id="f_submit" type="submit" value="OK">&nbsp;<input id="f_cancel" type="button" value="Cancel"></td></tr>
 			</table>
 		</div>
