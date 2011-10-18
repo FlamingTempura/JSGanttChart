@@ -6,6 +6,7 @@
         jsgtThis = undefined,
 
         ganttView,
+        collection,
         
         monthNames = [ "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December" ],
@@ -18,7 +19,7 @@
                 fields: [ "name", "resources", "percentageDone", "estimatedHours" ]
             })
 
-            var collection = new GanttElementCollection(options.elements);
+            collection = new GanttElementCollection(options.elements);
 
             ganttView = new GanttContainerView({
                 collection: collection,
@@ -417,6 +418,16 @@
 
         render: function () {
             return ganttView.render();
+        },
+
+        newElementModel: function () {
+            var model = new GanttElementModel({ 
+                id: Math.round(Math.random() * 1000000), 
+                name: "New stage", 
+                startDate: new Date()
+            }, { collection: collection });
+            collection.add(model);
+            return model;
         }
     });
 

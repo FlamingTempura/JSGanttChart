@@ -111,9 +111,7 @@
 
 		var currElementModel;
 
-		gantt.bind("row_click", function (e, model) {
-			e.preventDefault();
-			e.stopPropagation();
+		function showEditForm (model) {
 			var element = model.toJSON();
 			jQuery("#editform").fadeIn();
 			jQuery("#editform #f_id").val(element.id);
@@ -126,6 +124,12 @@
 			jQuery("#editform #f_hours").val(element.hoursExpected);
 			jQuery("#editform #f_resources").val(element.resources);
 			currElementModel = model;
+		}
+
+		gantt.bind("row_click", function (e, model) {
+			e.preventDefault();
+			e.stopPropagation();
+			showEditForm(model);
 		});
 
 		jQuery(window).ready(function () {
@@ -137,9 +141,12 @@
 				currElementModel.set({
 					id: jQuery("#editform #f_id").val(),
 					name: jQuery("#editform #f_name").val(),
-					startDate: new Date(jQuery("#editform #f_start").val()),
-					endDate: new Date(jQuery("#editform #f_end").val()),
-					slackEndDate: new Date(jQuery("#editform #f_slend").val()),
+					startDate: jQuery("#editform #f_start").val() ? 
+							new Date(jQuery("#editform #f_start").val()) : undefined,
+					endDate: jQuery("#editform #f_end").val() ? 
+							new Date(jQuery("#editform #f_end").val()) : undefined,
+					slackEndDate: jQuery("#editform #f_slend").val() ? 
+							new Date(jQuery("#editform #f_slend").val()) : undefined,
 					type: jQuery("#editform #f_type").val(),
 					percentageDone: jQuery("#editform #f_done").val(),
 					hoursExpected: jQuery("#editform #f_hours").val(),
@@ -147,11 +154,16 @@
 				});
 				jQuery("#editform").fadeOut();
 			});
+
+			jQuery("#add").click(function () {
+				showEditForm(gantt.newElementModel());
+			});
 		});
 	</script>
 </head>
 <body>
 	<div id="container"></div>
+	<input type="button" id="add" value="Add">
 	<div id="editform">
 		<div class="form">
 			<table>
