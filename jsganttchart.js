@@ -195,6 +195,14 @@
                             str = _(model.get(field)).reduce(function (memo, resource) {
                                 return (memo ? memo + ", " : "") + this_.options.resources[resource];
                             }, "");
+                        } else if (field === "percentageDone") {
+                            if (str === 100) {
+                                str = "Done";
+                            } else if (!str) {
+                                str = "Not started";
+                            } else {
+                                str = "In progress: " + str + "%";
+                            }
                         }
                         return jQuery('<td>' + str + '</td>'); 
                     })).click(function (e) {
