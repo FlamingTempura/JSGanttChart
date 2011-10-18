@@ -428,6 +428,14 @@
             }, { collection: collection });
             collection.add(model);
             return model;
+        },
+
+        getJSON: function () {
+            return collection.toJSON();
+        },
+
+        setJSON: function (json) {
+            collection.reset(json);
         }
     });
 

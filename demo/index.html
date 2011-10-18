@@ -1,5 +1,6 @@
 <html>
 <head>
+	<!--<script src="../lib/json.js"></script>-->
 	<script src="../lib/jquery.js"></script>
 	<script src="../lib/underscore.js"></script>
 	<script src="../lib/backbone.js"></script>
@@ -126,6 +127,11 @@
 			currElementModel = model;
 		}
 
+		function showJSONEditForm () {
+			jQuery("#jsonform").fadeIn();
+			jQuery("#jsonform #f_json").val(JSON.stringify(gantt.getJSON()));
+		}
+
 		gantt.bind("row_click", function (e, model) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -137,7 +143,7 @@
 
 			jQuery("#editform #f_cancel").click(function () { jQuery("#editform").fadeOut(); });
 
-			jQuery("#editform #f_submit").click(function() {
+			jQuery("#editform #f_submit, #editform #f_apply").click(function() {
 				currElementModel.set({
 					id: jQuery("#editform #f_id").val(),
 					name: jQuery("#editform #f_name").val(),
@@ -152,11 +158,29 @@
 					hoursExpected: jQuery("#editform #f_hours").val(),
 					resources: jQuery("#editform #f_resources").val()
 				});
+
+			});
+
+			jQuery("#editform #f_submit").click(function() {
 				jQuery("#editform").fadeOut();
 			});
 
+			jQuery("#jsonform #f_cancel").click(function () { jQuery("#jsonform").fadeOut(); });
+
+			jQuery("#jsonform #f_submit, #jsonform #f_apply").click(function() {
+				gantt.setJSON(JSON.parse(jQuery("#jsonform #f_json").val()));
+				
+				jQuery("#editform").fadeOut();
+			});
+
+			jQuery("#jsonform #f_submit").click(function () { jQuery("#jsonform").fadeOut(); });
+
 			jQuery("#add").click(function () {
 				showEditForm(gantt.newElementModel());
+			});
+
+			jQuery("#json").click(function () {
+				showJSONEditForm();
 			});
 		});
 	</script>
@@ -164,6 +188,7 @@
 <body>
 	<div id="container"></div>
 	<input type="button" id="add" value="Add">
+	<input type="button" id="json" value="Edit JSON">
 	<div id="editform">
 		<div class="form">
 			<table>
@@ -176,8 +201,20 @@
 				<tr><th>Percentage Done:</th><td><input id="f_done" type="text" value=""></td></tr>
 				<tr><th>Estimated Hours:</th><td><input id="f_hours" type="text" value=""></td></tr>
 				<tr><th>Resources:</th><td><input id="f_resources" type="text" value=""></td></tr>
-				<tr><th></th><td><input id="f_submit" type="submit" value="OK">&nbsp;<input id="f_cancel" type="button" value="Cancel"></td></tr>
+				<tr><th></th><td>
+					<input id="f_apply" type="button" value="Apply">&nbsp;
+					<input id="f_submit" type="submit" value="OK">&nbsp;
+					<input id="f_cancel" type="button" value="Cancel">
+				</td></tr>
 			</table>
+		</div>
+	</div>
+	<div id="jsonform">
+		<div class="form">
+			<textarea id="f_json"></textarea>
+			<input id="f_apply" type="button" value="Apply">&nbsp;
+			<input id="f_submit" type="submit" value="OK">&nbsp;
+			<input id="f_cancel" type="button" value="Cancel">
 		</div>
 	</div>
 </body>
