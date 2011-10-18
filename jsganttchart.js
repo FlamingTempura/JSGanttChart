@@ -63,29 +63,36 @@
 				var this_ = this,
 					firstDate,
 					lastDate,
-					dateIterator,
-					container = jQuery('<table cellspacing="0"></table>'),
+					dateIterator,,
 					row,
-					cell;
+					cell,
+					jel;
 
 				$(this.el).html('');
 
+				return this.renderDataTable().renderGanttChart().renderKey();
+			},
+
+			renderDataTable: function () {
+				var table = jQuery('<table cellspacing="0"></table>'),
+					row;
 				// Populate headers
 				row = jQuery('<tr></tr>');
 				_(this_.fieldOrder).each(function (field) { row.append('<th>' + fieldNames[field] + '</th>'); });
-				container.append(row);
+				table.append(row);
 
 				// Populate data
 				_(elements).each(function (element) {
 					row = jQuery('<tr></tr>');
 					_(this_.fieldOrder).each(function (field) { row.append('<td>' + (element.hasOwnProperty(field) ? element[field] : '') + '</td>'); });
 					row.click(function (e) { jsgtThis.trigger("row_click", e, element); return false; });
-					container.append(row);
+					table.append(row);
 				});
 
-				$(this.el).append(container);
+				$(this.el).append(table);
+			},
 
-
+			renderGanttChart: function () {
 				_(elements).each(function (element) {
 					var startDate = element.startDate.getTime(),
 						endDate = element.endDate.getTime();
@@ -117,8 +124,12 @@
 								element.startDate.getMonth() == dateIterator.getMonth() &&
 								element.startDate.getFullYear() == dateIterator.getFullYear()) {
 							var noOfDays = Math.round((element.endDate.getTime() - element.startDate.getTime()) / (24 * 60 * 60 * 1000));
-							cell.append('<div class="el" style="width:' + (noOfDays * 25)+ 'px;' + 
-								(element.type ? ' background:' + types[element.type].color + ';' : '') + '">&nbsp;</div>');
+							gel = jQuery('<div class="el"></div>').
+								css({ width: noOfDays * 25 });
+							if (element.type) {
+								gel.css({ background: types[element.type.color] });
+							}
+							cell.append(gel);
 						}
 						row.append(cell);
 						dateIterator.setDate(dateIterator.getDate() + 1);
@@ -127,7 +138,10 @@
 				});
 
 				$(this.el).append(container); // make it a adjustable table view
-				return this;
+			},
+
+			renderKey: function () {
+				
 			}
 		}),
 		gc;
