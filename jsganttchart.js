@@ -116,7 +116,7 @@
             render: function () {
                 this.$el.html('');
                 var this_ = this,
-                    table = $('<table cellspacing="0"></table>');
+                    table = $('<table cellspacing="0" cellpadding="0"></table>');
 
                 // Populate headers
                 table.append($.fn.append.apply($('<tr></tr>'), _(this_.options.fields).map(function (field) {
@@ -144,7 +144,7 @@
                                 str = '<div class="in-progress">In progress: ' + str + '%</div>';
                             }
                         }
-                        return $('<td>' + str + '</td>');
+                        return $('<td>' + (str || "&nbsp") + '</td>');
                     })).click(function (e) {
                         this_.trigger("row_click", e, model);
                         return false;
