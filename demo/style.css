@@ -99,8 +99,7 @@ th {
 
 		.done {
 			position: absolute;
-			height: 15px;
-			background: rgba(0, 0, 0, 0.5);
+			border-bottom: 15px solid rgba(0, 0, 0, 0.5);
 		}
 
 		.donetext {
