@@ -53,6 +53,9 @@
 			position: absolute;
 			z-index: 10;
 		}
+		.el.critical {
+			background: red;
+		}
 		#container .row, #container tr {
 			MozUserSelect: none;
 			cursor: pointer;
@@ -65,48 +68,100 @@
 			left: 0;
 			right: 0;
 			display: none;
-			background: rgba(0, 0, 0, 50%);
+			background: rgba(0, 0, 0, 0.5);
 			z-index: 1000;
 		}
 		#editform .form {
-			margin: 20px auto;
+			margin: 80px auto;
 			background: white;
+			width: 300px;
+			padding: 10px;
 		}
 	</style>
 	<script>
 		var gantt = JSGanttChart.create();
 
+		gantt.setTypes({
+			analysis: {
+				name: "Analysis",
+				color: "yellow"
+			},
+			critical: {
+				name: "Critical",
+				color: "red"
+			},
+			programming: {
+				name: "Programming",
+				color: "blue"
+			},
+			documentation: {
+				name: "Documentation",
+				color: "orange"
+			}
+		});
+
 		gantt.setElements([
 			{
 				id: "meeting1",
 				name: "Supervisor meeting",
-				startDate: new Date("5 October 2011 11:00")
+				startDate: "5 October 2011 11:00"
 			},
 			{
 				id: "brief",
 				name: "Project Brief",
 				predecessors: ["meeting1"],
-				startDate: new Date("3 October 2011"),
-				endDate: new Date("14 October 2011 16:00"),
-				critical: true,
+				startDate: "3 October 2011",
+				endDate: "14 October 2011 16:00",
+				type: "critical",
 				slackDuration: 4, // or slackEnd: date
 				elements: [
 					/* sub elements */
-				]
+				],
+				percentageDone: 0.5,
+				estimatedHours: 10
+			},
+			{
+				id: "prestudy",
+				name: "Prestudy",
+				startDate: "18 October 2011",
+				endDate: "29 October 2011",
+				type: "analysis"
+			},
+			{
+				id: "software1",
+				name: "Software development P1",
+				startDate: "20 October 2011",
+				endDate: "14 December 2011"
+			},
+			{
+				id: "study2",
+				name: "Second study",
+				startDate: "30 October 2011",
+				endDate: "1 December 2011",
+				type: "analysis"
+			},
+			{
+				id: "reviewmeeting1",
+				name: "Review meeting",
+				startDate: "13 November 2011"
 			},
 			{
 				id: "progreport",
 				name: "Progress Report",
-				startDate: new Date("7 December 2011"),
-				endDate: new Date("14 December 2011 16:00")
+				startDate: "7 December 2011",
+				endDate: "14 December 2011 16:00",
+				type: "documentation"
 			},
 			{
 				id: "finalreport",
 				name: "Final Project Report",
 				startDate: "2 April 2012",
-				endDate: "2 May 2012"
+				endDate: "2 May 2012",
+				type: "documentation"
 			}
 		]);
+
+		var currElement;
 
 		gantt.bind("row_click", function (e, element) {
 			e.preventDefault();
@@ -117,12 +172,22 @@
 			jQuery("#editform #f_name").val(element.name);
 			jQuery("#editform #f_start").val(element.startDate);
 			jQuery("#editform #f_end").val(element.endDate);
+			currElement = element;
 		});
 
 		jQuery(window).ready(function () {
 			jQuery("#container").append(gantt.getDOM());
 
 			jQuery("#editform #f_cancel").click(function () { jQuery("#editform").fadeOut(); });
+
+			jQuery("#editform #f_submit").click(function() {
+				currElement.id = jQuery("#editform #f_id").val();
+				currElement.name = jQuery("#editform #f_name").val();
+				currElement.startDate = new Date(jQuery("#editform #f_start").val());
+				currElement.endDate = new Date(jQuery("#editform #f_end").val());
+				gantt.setElement(currElement);
+				jQuery("#editform").fadeOut();
+			});
 		});
 	</script>
 </head>

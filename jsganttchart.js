@@ -11,9 +11,12 @@
 
 		elements,
 
+		types = {},
+
 		fieldNames = {
 			id: 'ID',
-			name: 'Item name'
+			name: 'Item name',
+			estimatedHours: 'Estim. Hours'
 		},
 
 		mandatoryFields = ['id', 'name', 'startDate'],
@@ -114,7 +117,8 @@
 								element.startDate.getMonth() == dateIterator.getMonth() &&
 								element.startDate.getFullYear() == dateIterator.getFullYear()) {
 							var noOfDays = Math.round((element.endDate.getTime() - element.startDate.getTime()) / (24 * 60 * 60 * 1000));
-							cell.append('<div class="el" style="width:' + (noOfDays * 25)+ 'px">&nbsp;</div>');
+							cell.append('<div class="el" style="width:' + (noOfDays * 25)+ 'px;' + 
+								(element.type ? ' background:' + types[element.type].color + ';' : '') + '">&nbsp;</div>');
 						}
 						row.append(cell);
 						dateIterator.setDate(dateIterator.getDate() + 1);
@@ -125,7 +129,8 @@
 				$(this.el).append(container); // make it a adjustable table view
 				return this;
 			}
-		});
+		}),
+		gc;
 
 	_(JSGanttChart).extend({
 		create: function () {
@@ -144,8 +149,22 @@
 			elements = newelements;
 		},
 
+		setTypes: function (newtypes) {
+			types = newtypes;
+		},
+
+		setElement: function (element) {
+			_(elements).each(function (el) {
+				if (el.id === element.id) {
+					_(el).extend(el); // Ewww... hacky
+				}
+			});
+			console.log("Render?")
+			gc.render();
+		},
+
 		getDOM: function () {
-			var gc = new GanttChartView();
+			gc = new GanttChartView();
 			gc.setElements(elements);
 			var el = gc.render().el;
 			return el;
