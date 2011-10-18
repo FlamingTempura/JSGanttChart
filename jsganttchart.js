@@ -177,7 +177,7 @@
                 this.$el.css({ left: dayFromStart * 25, width: noOfDays * 25 });
 
                 if (model.has("type") && this.options.types[model.get("type")]) {
-                    this.$el.css({ background: this.options.types[model.get("type")].color });
+                    this.$el.css({ borderBottomColor: this.options.types[model.get("type")].color });
                 }
 
                 if (model.has("percentageDone") && model.get("percentageDone") > 0) {
