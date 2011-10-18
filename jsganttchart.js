@@ -28,6 +28,10 @@
                 types: options.types,
                 resources: options.resources
             });
+
+            ganttView.bind("row_click", function (e, model) {
+                jsgtThis.trigger("row_click", e, model);
+            });
         },
 
         fieldNames = {
@@ -199,7 +203,7 @@
                         } else if (field === "percentageDone") {
                             if (str === 100) {
                                 str = '<div class="finished">Done</div>';
-                            } else if (!str) {
+                            } else if (!str || str === 0) {
                                 str = '<div class="not-started">Not started</div>';
                             } else {
                                 str = '<div class="in-progress">In progress: ' + str + '%</div>';
@@ -297,7 +301,7 @@
                     }
 
                     row.append(elementHolder.append(elementView.render().el))
-                        .click(function (e) { jsgtThis.trigger("row_click", e, model); });
+                        .click(function (e) { this_.trigger("row_click", e, model); });
 
                     while (dateIterator <= lastDate) {
                         var el = jQuery('<div class="cell"></div>');
@@ -341,7 +345,7 @@
                     this.$el.css({ background: this.options.types[model.get("type")].color });
                 }
 
-                if (model.has("percentageDone")) {
+                if (model.has("percentageDone") && model.get("percentageDone") > 0) {
                     el = jQuery('<div class="done"></div>');
                     el.css({ width: model.get("percentageDone") + "%" });
                     this.$el.append(el, jQuery('<div class="donetext">' + (model.get("percentageDone") < 100 ? model.get("percentageDone") + "% done" : "Done" ) + '</div>'));

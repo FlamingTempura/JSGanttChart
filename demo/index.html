@@ -114,6 +114,15 @@
 
 		function showEditForm (model) {
 			var element = model.toJSON();
+			_(element).defaults({
+				endDate: "",
+				slackEndDate: "",
+				type: "",
+				percentageDone: 0,
+				hoursExpected: "",
+				resources: [],
+				predecessors: []
+			});
 			jQuery("#editform").fadeIn();
 			jQuery("#editform #f_id").val(element.id);
 			jQuery("#editform #f_name").val(element.name);
@@ -123,7 +132,8 @@
 			jQuery("#editform #f_type").val(element.type);
 			jQuery("#editform #f_done").val(element.percentageDone);
 			jQuery("#editform #f_hours").val(element.hoursExpected);
-			jQuery("#editform #f_resources").val(element.resources);
+			jQuery("#editform #f_resources").val(element.resources.join(","));
+			jQuery("#editform #f_pre").val(element.predecessors.join(","));
 			currElementModel = model;
 		}
 
@@ -156,7 +166,8 @@
 					type: jQuery("#editform #f_type").val(),
 					percentageDone: jQuery("#editform #f_done").val(),
 					hoursExpected: jQuery("#editform #f_hours").val(),
-					resources: jQuery("#editform #f_resources").val()
+					resources: jQuery("#editform #f_resources").val().split(","),
+					predecessors: jQuery("#editform #f_pre").val().split(",")
 				});
 
 			});
@@ -200,7 +211,8 @@
 				<tr><th>Type:</th><td><input id="f_type" type="text" value=""></td></tr>
 				<tr><th>Percentage Done:</th><td><input id="f_done" type="text" value=""></td></tr>
 				<tr><th>Estimated Hours:</th><td><input id="f_hours" type="text" value=""></td></tr>
-				<tr><th>Resources:</th><td><input id="f_resources" type="text" value=""></td></tr>
+				<tr><th>Resources (comma separated ids):</th><td><input id="f_resources" type="text" value=""></td></tr>
+				<tr><th>Predecessors (comma separated ids):</th><td><input id="f_pre" type="text" value=""></td></tr>
 				<tr><th></th><td>
 					<input id="f_apply" type="button" value="Apply">&nbsp;
 					<input id="f_submit" type="submit" value="OK">&nbsp;
