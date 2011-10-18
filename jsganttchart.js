@@ -24,7 +24,8 @@
                 collection: collection,
                 displayKey: options.displayKey,
                 fields: options.fields,
-                types: options.types
+                types: options.types,
+                resources: options.resources
             });
         },
 
@@ -105,23 +106,12 @@
             },
 
             add: function (models) {
-                /*if () {
-                    
-                } else {
-                    if (!(model instanceof Backbone.Model)) {
-                        var attrs = model;
-                        model = new this.model(attrs, {collection: this});
-                        if (model.validate && !model._performValidation(attrs, options)) model = false;
-                    } else if (!model.collection) {
-                        model.collection = this;
-                    }
-                }*/
                 if (_.isArray(models)) {
                     for (var i = 0, l = models.length; i < l; i++) {
                         this.add(models[i]);
                     }
                 } else {
-                    Backbone.Collection.prototype.add.call(this, models, { at: this.length })
+                    Backbone.Collection.prototype.add.call(this, models, { at: this.length }); // Order properly
                 }
                 return this;
             }
@@ -144,7 +134,8 @@
 
                 this.dataView = new DataTableView({
                     collection: this.options.collection,
-                    fields: this.options.fields
+                    fields: this.options.fields,
+                    resources: this.options.resources
                 });
                 this.ganttView = new GanttTableView({ 
                     collection: this.options.collection,
@@ -200,6 +191,10 @@
                         if (field === "name" && model.has("parentElement")) {
                             str = "&nbsp;&nbsp;&nbsp;&nbsp;" + str;
                             row.addClass("child");
+                        } else if (field === "resources") {
+                            str = _(model.get(field)).reduce(function (memo, resource) {
+                                return (memo ? memo + ", " : "") + this_.options.resources[resource];
+                            }, "");
                         }
                         return jQuery('<td>' + str + '</td>'); 
                     })).click(function (e) {

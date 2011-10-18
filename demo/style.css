@@ -25,7 +25,9 @@ table {
 }
 .gantt-data-table {
 	display: inline-block;
-	margin-top: 19px;
+}
+th {
+	padding-top: 21px;
 }
 .gantt-table {
 	display: inline-block;
@@ -35,10 +37,6 @@ table {
 	white-space: nowrap;
 	width: 1000px;
 }
-	.bl {
-		border-left: 1px solid #ddd;
-		margin-left: -1px;
-	}
 	.row {
 		
 	}

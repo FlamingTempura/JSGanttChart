@@ -7,6 +7,11 @@
 	<link rel="stylesheet" href="style.css">
 	<script>
 		var gantt = JSGanttChart.create({
+			resources: {
+				programmer: "Peter West",
+				supervisor: "mc",
+				cosupervisor: "max"
+			},
 			types: {
 				analysis: {
 					name: "Analysis",
@@ -30,7 +35,8 @@
 					id: "meeting1",
 					name: "Supervisor meeting",
 					startDate: "5 October 2011 11:00",
-					percentageDone: 100
+					percentageDone: 100,
+					resources: [ "programmer", "supervisor", "cosupervisor" ]
 				},
 				{
 					id: "brief",
