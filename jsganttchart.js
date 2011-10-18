@@ -194,10 +194,12 @@
 
                 // Populate data
                 $.fn.append.apply(table, this.options.collection.map(function (model) {
-                    return $.fn.append.apply(jQuery('<tr></tr>'), _(this_.options.fields).map(function (field) {
+                    var row = jQuery('<tr></tr>');
+                    return $.fn.append.apply(row, _(this_.options.fields).map(function (field) {
                         var str = (model.has(field) ? model.get(field) : '');
                         if (field === "name" && model.has("parentElement")) {
                             str = "&nbsp;&nbsp;&nbsp;&nbsp;" + str;
+                            row.addClass("child");
                         }
                         return jQuery('<td>' + str + '</td>'); 
                     })).click(function (e) {
@@ -226,7 +228,8 @@
                 var this_ = this,
                     firstDate,
                     lastDate,
-                    dateIterator;
+                    dateIterator,
+                    today = new Date();
 
                 // Determine when the gantt chart starts and finishes
                 this.options.collection.each(function (model) {
@@ -258,7 +261,14 @@
                         currMonthEl = jQuery('<div class="cell">' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</div>');
                         monthRow.append(currMonthEl);
                     }
-                    dayRow.append('<div class="cell">' + dateIterator.getDate() + '</div>');
+                    var el = $('<div class="cell">' + dateIterator.getDate() + '</div>');
+                    if (dateIterator.toDateString() === today.toDateString()) {
+                        el.addClass("today");
+                    }
+                    if (dateIterator.getDay() === 6) {
+                        el.addClass("markend");
+                    }
+                    dayRow.append(el);
                     dateIterator.setDate(dateIterator.getDate() + 1);
                     currMonthSize = currMonthSize + 1;
                 }
@@ -274,13 +284,25 @@
                             firstDate: firstDate,
                             types: this_.options.types
                         }),
-                        dateIterator = new Date(firstDate.getTime());
+                        dateIterator = new Date(firstDate.getTime()),
+                        elementHolder = $('<div class="gantt-element-holder"></div>');
 
-                    row.append(elementView.render().el)
+                    if (model.has("parentElement")) {
+                        row.addClass("child");
+                    }
+
+                    row.append(elementHolder.append(elementView.render().el))
                         .click(function (e) { jsgtThis.trigger("row_click", e, model); });
 
                     while (dateIterator <= lastDate) {
-                        row.append(jQuery('<div class="cell"></div>'));
+                        var el = jQuery('<div class="cell"></div>');
+                        if (dateIterator.getDay() === 6) {
+                            el.addClass("markend");
+                        }
+                        if (dateIterator.getDay() === 6 || dateIterator.getDay() === 0) {
+                            el.addClass("weekend");
+                        }
+                        row.append(el);
                         dateIterator.setDate(dateIterator.getDate() + 1);
                     }
 

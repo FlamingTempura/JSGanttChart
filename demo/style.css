@@ -40,10 +40,26 @@ table {
 		margin-left: -1px;
 	}
 	.row {
+		
+	}
+	.gantt-element-holder {
 		position: relative;
+	}
+	tr.child, .row.child .cell {
+		background: #eee;
 	}
 		.dates {
 			font-weight: bold;
+		}
+		.dates .today {
+			color: red;
+		}
+		.cell.markend {
+			border-right-color: #bbb;
+		}
+
+		.cell.weekend {
+			background: #f7f7f7;
 		}
 		.cell {
 			width: 24px;
