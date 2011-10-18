@@ -196,11 +196,11 @@
                             }, "");
                         } else if (field === "percentageDone") {
                             if (str === 100) {
-                                str = "Done";
+                                str = '<div class="finished">Done</div>';
                             } else if (!str) {
-                                str = "Not started";
+                                str = '<div class="not-started">Not started</div>';
                             } else {
-                                str = "In progress: " + str + "%";
+                                str = '<div class="in-progress">In progress: ' + str + '%</div>';
                             }
                         }
                         return jQuery('<td>' + str + '</td>'); 
@@ -341,7 +341,7 @@
                 if (model.has("percentageDone")) {
                     el = jQuery('<div class="done"></div>');
                     el.css({ width: model.get("percentageDone") + "%" });
-                    this.$el.append(el, jQuery('<div class="donetext">' + (model.get("percentageDone") < 100 ? model.get("percentageDone") + "% " : "" ) + 'done</div>'));
+                    this.$el.append(el, jQuery('<div class="donetext">' + (model.get("percentageDone") < 100 ? model.get("percentageDone") + "% done" : "Done" ) + '</div>'));
                 }
 
                 if (model.has("slackEndDate")) {

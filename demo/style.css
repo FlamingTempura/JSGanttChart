@@ -133,6 +133,10 @@ th {
 			cursor: pointer;
 		}
 	
+	.finished { color: green; }
+	.in-progress { color: orange; }
+	.not-started { color: #999; }
+
 	.gantt-key > div {
 		margin-bottom: 2px;
 	}
