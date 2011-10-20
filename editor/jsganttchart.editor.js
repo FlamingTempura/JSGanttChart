@@ -233,14 +233,26 @@
                 this.toolbar = new ToolbarView({
                     buttons: [
                         {
-                            name: "New",
+                            name: "New Stage",
                             action: function () {
                                 this_.editDialog.load(this_.gantt.newElementModel());
                                 this_.editDialog.show();
                             }
                         },
                         {
-                            name: "JSON",
+                            name: "View Resources",
+                            action: function () {
+                                this_.resourcesDialog.show();
+                            }
+                        },
+                        {
+                            name: "View Types",
+                            action: function () {
+                                this_.resourcesDialog.show();
+                            }
+                        },
+                        {
+                            name: "View/Edit JSON",
                             action: function () {
                                 this_.jsonDialog.val(JSON.stringify(this_.gantt.getJSON()));
                                 this_.jsonDialog.show();

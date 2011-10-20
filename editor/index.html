@@ -11,7 +11,30 @@
 	<link rel="stylesheet" href="style.css">
 	<script>
 		jQuery(document).ready(function () {
-			var gantt = JSGanttChart.create({ localStorage: new Store("JSGanttChartStore") }),
+			var gantt = JSGanttChart.create({
+		resources: {
+			programmer: "Peter",
+			supervisor: "mc",
+			cosupervisor: "Max"
+		},
+		types: {
+			analysis: {
+				name: "Analysis",
+				color: "#C79810"  // yellow
+			},
+			critical: {
+				name: "Critical",
+				color: "#CC0000" // red
+			},
+			programming: {
+				name: "Programming",
+				color: "#356AA0" // blue
+			},
+			documentation: {
+				name: "Documentation",
+				color: "#FF7400" // orange
+			}
+		}, localStorage: new Store("JSGanttChartStore") }),
 				editor = JSGanttChart.Editor.create({ gantt: gantt });
 			jQuery(".container").append(editor.render().el);
 		});
