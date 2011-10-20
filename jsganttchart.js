@@ -58,7 +58,11 @@
                     }
                 }
 
-                if (this.has("slackDuration")) {
+                if (this.has("slackEndDate")) {
+                    if (!_(this.has("slackEndDate")).isDate()) {
+                        this.set({ slackEndDate: new Date(this.get("slackEndDate")) });
+                    }
+                } else if (this.has("slackDuration")) {
                     var date = new Date(this.get("endDate"));
                     date.setDate(date.getDate() + this.get("slackDuration"));
                     this.set({ slackEndDate: date });
