@@ -28,7 +28,9 @@
             initialize: function (model, options) {
                 this.collection = options.collection;
                 this.normalize();
-                window.m = this.collection;
+                if (this.collection.hasOwnProperty("localStorage")) {
+                    this.save();
+                }
             },
 
             normalize: function () {
@@ -81,10 +83,16 @@
 
         GanttElementCollection = Backbone.Collection.extend({
             model: GanttElementModel,
-
-            initialize: function () {
-                var this_ = this,
+            initialize: function (models, options) {
+                console.log(this.options)
+                var useLocalStorage = options && options.hasOwnProperty("localStorage"),
+                    this_ = this,
                     triggerChange = function () { this_.trigger("change"); };
+
+                if (useLocalStorage) {
+                    this.localStorage = options.localStorage;
+                    this.fetch();
+                }
 
                 this.bind("add", triggerChange);
                 this.bind("remove", triggerChange);
@@ -180,7 +188,7 @@
 
                 this.$el.css({ left: dayFromStart * 25, width: noOfDays * 25 });
 
-                if (model.has("type") && this.options.types[model.get("type")]) {
+                if (model.has("type") && this.options.types.hasOwnProperty(model.get("type"))) {
                     this.$el.css({ borderBottomColor: this.options.types[model.get("type")].color });
                 }
 
@@ -380,12 +388,23 @@
         JSGanttChart = root.JSGanttChart = function (options) {
             jsgtThis = this;
 
+            if (!options) {
+                options = {};
+            }
+
             _(options).defaults({
                 displayKey: true,
-                fields: [ "name", "resources", "percentageDone", "estimatedHours" ]
+                fields: [ "name", "resources", "percentageDone", "estimatedHours" ],
+                types: {},
+                resources: {}
             });
 
-            collection = new GanttElementCollection(options.elements);
+            var collectionOptions = {};
+            if (options.hasOwnProperty("localStorage")) {
+                collectionOptions["localStorage"] = options.localStorage;
+            }
+
+            collection = new GanttElementCollection(options.elements, collectionOptions);
 
             ganttView = new GanttContainerView({
                 collection: collection,

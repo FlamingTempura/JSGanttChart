@@ -1,168 +1,48 @@
-body, table {
-	font-family: verdana, sans-serif;
-	font-size: 12px;
-	color: #333;
-}
-td, th, .cell {
-	border-right: 1px solid #ddd;
-	border-bottom: 1px solid #ddd;
-	height: 15px;
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-
-td, th {
-	margin: 0;
-	padding-left: 7px;
-	padding-right: 7px;
-}
-table {
-	border-top: 1px solid #ddd;
-	border-left: 1px solid #ddd;
-	vertical-align: top;
-}
-.gantt-container {
-	white-space: nowrap;
-}
-.gantt-data-table {
-	display: inline-block;
-}
-th {
-	padding-top: 22px;
-}
-.gantt-table {
-	display: inline-block;
-	border-top: 1px solid #ddd;
-	vertical-align: top;
-	overflow-x: scroll;
-	white-space: nowrap;
-	width: 1000px;
-}
-	.row {
-		
-	}
-	.gantt-element-holder {
-		position: relative;
-	}
-	tr.child, .row.child .cell {
-		background: #efe;
-	}
-
-	.arrowline {
-		position: absolute;
-		border-right: 1px solid red;
-		border-top: 1px solid red;
-		z-index: 15;
-		margin-right: -5px;
-		padding-left: 5px;
-	}
-
-	.arrowhead {
-		position: absolute;
-		right: -6px;
-		bottom: 0;
-		/*width: 10px;
-		height: 5px;*/
-
-		border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid red;
-
-        width: 0;
-        height: 0;
-	}
-
-		.dates {
-			font-weight: bold;
-		}
-		.dates .today {
-			color: red;
-		}
-		.cell.markend {
-			border-right-color: #bbb;
-		}
-
-		.cell.weekend {
-			background: #f7f7f7 !important;
-		}
-		.cell {
-			width: 24px;
-			display: inline-block;
-			text-align: center;
-		}
-		.gantt-element {
-			position: absolute;
-			top: 2px;
-			border-bottom: 15px solid blue;
-			z-index: 10;
-		}
-
-		.done {
-			position: absolute;
-			border-bottom: 15px solid rgba(0, 0, 0, 0.5);
-		}
-
-		.donetext {
-			font-size: 10px;
-			font-weight: bold;
-			text-shadow: black 1px 1px 4px;
-			color: white;
-			position: absolute;
-			z-index: 20;
-			top: 0;
-			right: 0;
-			left: 0;
-			bottom: 0;
-			text-align: center;
-			line-height: 140%;
-		}
-
-		.slack {
-			position: absolute;
-			top: 5px;
-			height: 4px;
-			background: black;
-		}
-
-		.gantt-element.critical {
-			background: red;
-		}
-
-		.gantt-container .row, .gantt-container tr {
-			MozUserSelect: none;
-			cursor: pointer;
-		}
-	
-	.finished { color: green; }
-	.in-progress { color: orange; }
-	.not-started { color: #999; }
-
-	.gantt-key > div {
-		margin-bottom: 2px;
-	}
-
-	.gantt-key .color {
-		width: 20px;
-		height: 14px;
-		display: inline-block;
-		margin: 0 2px 0 0;
-		vertical-align: top;
-	}
-
-
 /* Editor elements */
-#editform, #jsonform {
-	position: fixed;
-	bottom: 0;
+
+.editor {
+	margin-top: 50px;
+	font-size: 11px;
+}
+
+.editor > .toolbar {
+	position: absolute;
+	top: 0;
 	left: 0;
 	right: 0;
-	min-height: 33%;
-	display: none;
-	background: rgba(255, 145, 95, 0.8);
+}
+
+.dialog {
+	position: fixed;
+	background: #f7f7f6;
+	border: 1px solid #ccc;
 	z-index: 1000;
 	padding: 3px;
-	border-top: 1px solid #888;
+	padding-top: 50px;
 }
+
+.fieldset th {
+	text-align: right;
+}
+
+.fieldset, .fieldset td, .fieldset th {
+	margin: 0;
+	padding: 1px;
+	border: 0;
+}
+
+.toolbar {
+	background: #f7f7f6;
+	padding: 5px;
+}
+
+.toolbar input {
+	border: 1px solid #ccc;
+	background: #e7e7e7;
+	font-size: 11px;
+	padding: 4px;
+}
+
 #editform .form, #jsonform .form {
 	margin: 0 auto;
 	width: 100%;
