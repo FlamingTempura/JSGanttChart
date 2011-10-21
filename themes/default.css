@@ -1,50 +1,72 @@
-body, table {
+.gantt-container, .gantt-container table {
 	font-family: verdana, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	color: #333;
-}
-td, th, .cell {
-	border-right: 1px solid #ddd;
-	border-bottom: 1px solid #ddd;
-	height: 15px;
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-
-td, th {
-	margin: 0;
-	padding-left: 7px;
-	padding-right: 7px;
-}
-table {
-	border-top: 1px solid #ddd;
-	border-left: 1px solid #ddd;
-	vertical-align: top;
-}
-.gantt-container {
 	white-space: nowrap;
 }
+
+	.gantt-container table {
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.gantt-container tr {	
+			height: 18px;
+		}
+
+		.gantt-container td,
+		.gantt-container th {
+			border-right: 1px solid #ddd;
+			border-bottom: 1px solid #ddd;
+			padding: 2px;
+		}
+
+			.gantt-container td.markend {
+				border-right-color: #bbb;
+			}
+
+			.gantt-container td.weekend {
+				background: #f7f7f7 !important;
+			}
+
+		.gantt-container th {
+			font-weight: bold;
+		}
+		.gantt-container .important {
+			color: red;
+		}
+
 .gantt-data-table {
 	display: inline-block;
+	border-top: 1px solid #ddd;
+	border-left: 1px solid #ddd;
 }
-th {
-	padding-top: 22px;
-}
+
+	.gantt-data-table th {
+		padding-top: 20px;
+	}
+
+	@-moz-document url-prefix() {
+		.gantt-data-table th {
+			padding-top: 22px;
+		}
+	}
+
 .gantt-table {
 	display: inline-block;
 	border-top: 1px solid #ddd;
 	vertical-align: top;
-	overflow-x: scroll;
 	white-space: nowrap;
-	width: 1000px;
 }
-	.row {
-		
+	
+	.gantt-table td .cell {
+		width: 18px;
 	}
+	
 	.gantt-element-holder {
 		position: relative;
 	}
-	tr.child, .row.child .cell {
+	tr.child, .row.child td {
 		background: #efe;
 	}
 
@@ -53,7 +75,7 @@ th {
 		border-right: 1px solid red;
 		border-top: 1px solid red;
 		z-index: 15;
-		margin-right: -5px;
+		margin-right: -3px;
 		padding-left: 5px;
 	}
 
@@ -61,49 +83,34 @@ th {
 		position: absolute;
 		right: -6px;
 		bottom: 0;
-		/*width: 10px;
-		height: 5px;*/
-
 		border-left: 6px solid transparent;
         border-right: 6px solid transparent;
         border-top: 6px solid red;
-
         width: 0;
         height: 0;
 	}
 
-		.dates {
-			font-weight: bold;
-		}
-		.dates .today {
-			color: red;
-		}
-		.cell.markend {
-			border-right-color: #bbb;
-		}
-
-		.cell.weekend {
-			background: #f7f7f7 !important;
-		}
-		.cell {
-			width: 24px;
-			display: inline-block;
-			text-align: center;
-		}
 		.gantt-element {
 			position: absolute;
-			top: 2px;
+			top: -1px;
+			left: -1px;
 			border-bottom: 15px solid blue;
 			z-index: 10;
+			opacity: 0.8;
+		}
+
+		tr:hover .gantt-element {
+			opacity: 1;
 		}
 
 		.done {
 			position: absolute;
-			border-bottom: 15px solid rgba(0, 0, 0, 0.5);
+			top: 2px;
+			border-bottom: 11px solid rgba(0, 0, 0, 0.5);
 		}
 
 		.donetext {
-			font-size: 10px;
+			font-size: 9px;
 			font-weight: bold;
 			text-shadow: black 1px 1px 4px;
 			color: white;
@@ -119,10 +126,19 @@ th {
 
 		.slack {
 			position: absolute;
-			top: 5px;
-			height: 4px;
+			top: 7px;
+			height: 3px;
 			background: black;
 		}
+
+			.slack-end {
+				position: absolute;
+				right: 0;
+				top: -4px;
+				height: 10px;
+				width: 3px;
+				background: black;
+			}
 
 		.gantt-element.critical {
 			background: red;
@@ -148,48 +164,3 @@ th {
 		margin: 0 2px 0 0;
 		vertical-align: top;
 	}
-
-
-/* Editor elements */
-#editform, #jsonform {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	min-height: 33%;
-	display: none;
-	background: rgba(255, 145, 95, 0.8);
-	z-index: 1000;
-	padding: 3px;
-	border-top: 1px solid #888;
-}
-#editform .form, #jsonform .form {
-	margin: 0 auto;
-	width: 100%;
-	height: 100%;
-}
-
-#jsonform .form {
-	width: 99%;
-	height: 100%;
-}
-
-#editform .form > table {
-	margin: 0 auto;
-}
-
-textarea {
-	width: 100%;
-	height: 80%;
-	min-height: 300px;
-}
-
-@media screen and (-webkit-min-device-pixel-ratio:0) { /* Chrome specific hack */
-
-    td, th, .cell {
-		height: 14px;
-	}
-	th {
-		padding-top: 21px;
-	}
-}

@@ -2,14 +2,23 @@
 
 .editor {
 	margin-top: 50px;
+}
+
+.editor, .editor table, .editor input {
+	font-family: verdana, sans-serif;
 	font-size: 11px;
+	color: #333;
 }
 
 .editor > .toolbar {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
+}
+
+.toolbar {
+	text-align: center;
 }
 
 .dialog {
@@ -21,6 +30,7 @@
 	z-index: 1000;
 	padding: 3px;
 	padding-top: 50px;
+	box-shadow: 2px 2px 18px #444;
 }
 
 .fieldset th {
@@ -66,12 +76,6 @@ textarea {
 	min-height: 300px;
 }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) { /* Chrome specific hack */
-
-    td, th, .cell {
-		height: 14px;
-	}
-	th {
-		padding-top: 21px;
-	}
+.gantt-container tr {
+	cursor: pointer;
 }

@@ -154,7 +154,7 @@
                             }
                         },
                         { 
-                            name: "Predecessors (dependancies, comma separated)", 
+                            name: "Predecessors (dependancies,<br />comma separated)", 
                             load: function (model) { return (model.get("predecessors") || []).join(", "); }, 
                             save: function (model, value) { 
                                 model.set({ predecessors: _(value.split(",")).chain()
@@ -181,7 +181,7 @@
                 var this_ = this,
                     textarea = jQuery("<textarea></textarea>"),
                     apply = function () {
-                        this.options.gantt.setJSON(JSON.parse(this_.val()));
+                        this_.options.gantt.setJSON(JSON.parse(this_.val()));
                     },
                     toolbar = new ToolbarView({
                         buttons: [
@@ -213,7 +213,7 @@
 
                 return this;
             },
-            val: function () { return this.textarea.val(arguments); }
+            val: function () { return $.fn.val.apply(this.textarea, arguments); }
         }),
 
         EditorView = Backbone.View.extend({
@@ -254,7 +254,7 @@
                         {
                             name: "View/Edit JSON",
                             action: function () {
-                                this_.jsonDialog.val(JSON.stringify(this_.gantt.getJSON()));
+                                this_.jsonDialog.val(JSON.stringify(this_.gantt.getJSON(), undefined, "    "));
                                 this_.jsonDialog.show();
                             }
                         }

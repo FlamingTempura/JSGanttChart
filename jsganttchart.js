@@ -118,6 +118,7 @@
             */
         DataTableView = Backbone.View.extend({
             className: "gantt-data-table",
+            tagName: "table",
             $el: undefined,
 
             initialize: function () {
@@ -126,17 +127,17 @@
                 this.$el = $(this.el);
             },
             render: function () {
+                var this_ = this;
+
                 this.$el.html('');
-                var this_ = this,
-                    table = $('<table cellspacing="0" cellpadding="0"></table>');
 
                 // Populate headers
-                table.append($.fn.append.apply($('<tr></tr>'), _(this_.options.fields).map(function (field) {
+                this.$el.append($.fn.append.apply($('<tr></tr>'), _(this_.options.fields).map(function (field) {
                     return $('<th>' + fieldNames[field] + '</th>');
                 })));
 
                 // Populate data
-                $.fn.append.apply(table, this.options.collection.map(function (model) {
+                $.fn.append.apply(this.$el, this.options.collection.map(function (model) {
                     var row = $('<tr></tr>');
                     return $.fn.append.apply(row, _(this_.options.fields).map(function (field) {
                         var str = (model.has(field) ? model.get(field) : '');
@@ -163,8 +164,6 @@
                     });
                 }));
 
-                this.$el.append(table);
-
                 return this;
             }
         }),
@@ -186,7 +185,7 @@
                     dayFromStart = Math.round((model.get("startDate").getTime() - this.options.firstDate.getTime()) / (24 * 60 * 60 * 1000)),
                     el;
 
-                this.$el.css({ left: dayFromStart * 25, width: noOfDays * 25 });
+                this.$el.css({ width: noOfDays * 23 - 3 });
 
                 if (model.has("type") && this.options.types.hasOwnProperty(model.get("type"))) {
                     this.$el.css({ borderBottomColor: this.options.types[model.get("type")].color });
@@ -199,20 +198,22 @@
                 }
 
                 if (model.has("slackEndDate")) {
-                    el = $('<div class="slack"></div>');
+                    el = $('<div class="slack"><div class="slack-end"></div></div>');
                     noOfDays = Math.round((model.get("slackEndDate").getTime() - model.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
-                    el.css({ left: "100%", width: noOfDays * 25 });
+                    el.css({ left: "100%", width: noOfDays * 23 });
                     this.$el.append(el);
                 }
 
                 if (model.has("predecessors")) {
                     $.fn.append.apply(this.$el, _(model.get("predecessors")).map(function (predecessor) {
                         var predecessorModel = this_.options.collection.get(predecessor);
-                        el = $('<div class="arrowline"><div class="arrowhead"></div></div>');
-                        noOfDays = Math.round((model.get("startDate").getTime() - predecessorModel.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
-                        var noOfRows = parseInt(model.cid.substr(1), 10) - parseInt(predecessorModel.cid.substr(1), 10);
-                        el.css({ right: "100%", bottom: "100%", width: noOfDays * 25, height: noOfRows * 19 - 7 });
-                        return el;
+                        if (predecessorModel) {
+                            el = $('<div class="arrowline"><div class="arrowhead"></div></div>');
+                            noOfDays = Math.round((model.get("startDate").getTime() - predecessorModel.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
+                            var noOfRows = parseInt(model.cid.substr(1), 10) - parseInt(predecessorModel.cid.substr(1), 10);
+                            el.css({ right: "100%", bottom: "100%", width: noOfDays * 23, height: noOfRows * 17 - 5 });
+                            return el;
+                        }
                     }));
                 }
 
@@ -222,6 +223,7 @@
 
         GanttTableView = Backbone.View.extend({
             className: "gantt-table",
+            tagName: "table",
             $el: undefined,
 
             initialize: function () {
@@ -249,8 +251,8 @@
                 firstDate = new Date(firstDate);
                 lastDate = new Date(lastDate);
 
-                var monthRow = $('<div class="dates bl"></div>'),
-                    dayRow = $('<div class="dates"></div>'),
+                var monthRow = $('<tr></tr>'),
+                    dayRow = $('<tr></tr>'),
                     currMonth,
                     currMonthSize,
                     currMonthEl;
@@ -260,16 +262,16 @@
                 while (dateIterator <= lastDate) {
                     if (dateIterator.getMonth() !== currMonth) {
                         if (currMonthEl) {
-                            currMonthEl.css({ width: currMonthSize * 25 - 1 });
+                            currMonthEl.attr({ colspan: currMonthSize });
                         }
                         currMonth = dateIterator.getMonth();
                         currMonthSize = 0;
-                        currMonthEl = $('<div class="cell">' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</div>');
+                        currMonthEl = $('<th>' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</th>');
                         monthRow.append(currMonthEl);
                     }
-                    var el = $('<div class="cell">' + dateIterator.getDate() + '</div>');
+                    var el = $('<th>' + dateIterator.getDate() + '</th>');
                     if (dateIterator.toDateString() === today.toDateString()) {
-                        el.addClass("today");
+                        el.addClass("important");
                     }
                     if (dateIterator.getDay() === 6) {
                         el.addClass("markend");
@@ -279,12 +281,12 @@
                     currMonthSize = currMonthSize + 1;
                 }
                 if (currMonthEl) {
-                    currMonthEl.css({ width: currMonthSize * 25 - 1 });
+                    currMonthEl.attr({ colspan: currMonthSize });
                 }
                 this.$el.append(monthRow, dayRow);
 
                 $.fn.append.apply(this.$el, this.options.collection.map(function (model) {
-                    var row = $('<div class="row"></div>'),
+                    var row = $('<tr></tr>'),
                         elementView = new GanttElementView({
                             model: model,
                             firstDate: firstDate,
@@ -292,17 +294,15 @@
                             collection: this_.options.collection
                         }),
                         dateIterator = new Date(firstDate.getTime()),
-                        elementHolder = $('<div class="gantt-element-holder"></div>');
+                        elementHolder = $('<div class="gantt-element-holder">&nbsp;</div>'),
+                        modelDate = model.get("startDate");
 
                     if (model.has("parentElement")) {
                         row.addClass("child");
                     }
 
-                    row.append(elementHolder.append(elementView.render().el))
-                        .click(function (e) { this_.trigger("row_click", e, model); });
-
                     while (dateIterator <= lastDate) {
-                        var el = $('<div class="cell"></div>');
+                        var el = $('<td><div class="cell ' + dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear() + '"></div></td>');
                         if (dateIterator.getDay() === 6) {
                             el.addClass("markend");
                         }
@@ -312,6 +312,10 @@
                         row.append(el);
                         dateIterator.setDate(dateIterator.getDate() + 1);
                     }
+
+                    row.find("." + modelDate.getDate() + "-" + modelDate.getMonth() + "-" + modelDate.getFullYear())
+                        .append(elementHolder.append(elementView.render().el))
+                        .click(function (e) { this_.trigger("row_click", e, model); });
 
                     return row;
                 }));
