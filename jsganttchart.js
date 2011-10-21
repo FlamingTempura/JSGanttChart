@@ -22,7 +22,21 @@
         mandatoryFields = ['id', 'name', 'startDate'],
 
         GanttElementModel = Backbone.Model.extend({
-            defaults: {},
+            defaults: {
+                order: 0,
+                name: undefined,
+                description: undefined,
+                startDate: undefined,
+                endDate: undefined,
+                slackEndDate: undefined,
+                type: undefined,
+                percentageDone: undefined,
+                hoursExpected: undefined,
+                resources: undefined,
+                predecessors: undefined,
+                icons: undefined
+            },
+
             collection: undefined,
 
             initialize: function (model, options) {
@@ -61,7 +75,7 @@
                 }
 
                 if (this.has("slackEndDate")) {
-                    if (!_(this.has("slackEndDate")).isDate()) {
+                    if (!_(this.get("slackEndDate")).isDate()) {
                         this.set({ slackEndDate: new Date(this.get("slackEndDate")) });
                     }
                 } else if (this.has("slackDuration")) {
@@ -78,21 +92,22 @@
                     }));
                     this.unset("elements");
                 }
+
+                if (this.has("icons")) {
+                    _(this.get("icons")).each(function (icon) {
+                        if (!_(icon.date).isDate()) {
+                            icon.date = new Date(icon.date);
+                        }
+                    });
+                }
             }
         }),
 
         GanttElementCollection = Backbone.Collection.extend({
             model: GanttElementModel,
             initialize: function (models, options) {
-                console.log(this.options)
-                var useLocalStorage = options && options.hasOwnProperty("localStorage"),
-                    this_ = this,
+                var this_ = this,
                     triggerChange = function () { this_.trigger("change"); };
-
-                if (useLocalStorage) {
-                    this.localStorage = options.localStorage;
-                    this.fetch();
-                }
 
                 this.bind("add", triggerChange);
                 this.bind("remove", triggerChange);
@@ -110,6 +125,20 @@
                     Backbone.Collection.prototype.add.call(this, models, { at: this.length }); // Order properly
                 }
                 return this;
+            },
+
+            sort: function (model) {
+                var this_ = this;
+                this.reset(collection.sortBy(function (model) {
+                    var order;
+                    if (model.has("parentElement") && this_.get(model.get("parentElement"))) { /// HACK
+                        order = this_.get(model.get("parentElement")).get("order") + (0.00001 * model.get("order") + 0.00001);
+                    } else {
+                        order = model.get("order");
+                    }
+                    console.log(model.get("name"), "Order", order, "Parent", model.get("parentElement"))
+                    return order;
+                }));
             }
         }),
 
@@ -126,6 +155,18 @@
                 this.options.collection.bind("change", this.render);
                 this.$el = $(this.el);
             },
+
+            highlight: function (model) {
+                if (model) {
+                    this.$el.find('.jsgt_' + model.get("id"))
+                        .addClass("highlight")
+                        .siblings()
+                        .removeClass("highlight");
+                } else {
+                    this.$el.find('tr').removeClass("highlight");
+                }
+            },
+
             render: function () {
                 var this_ = this;
 
@@ -138,10 +179,10 @@
 
                 // Populate data
                 $.fn.append.apply(this.$el, this.options.collection.map(function (model) {
-                    var row = $('<tr></tr>');
+                    var row = $('<tr class="jsgt_' + model.get("id") + '"></tr>');
                     return $.fn.append.apply(row, _(this_.options.fields).map(function (field) {
                         var str = (model.has(field) ? model.get(field) : '');
-                        if (field === "name" && model.has("parentElement")) {
+                        if (field === "name" && model.get("parentElement") && model.get("parentElement").trim()) {
                             str = "&nbsp;&nbsp;&nbsp;&nbsp;" + str;
                             row.addClass("child");
                         } else if (field === "resources") {
@@ -158,10 +199,10 @@
                             }
                         }
                         return $('<td>' + (str || "&nbsp") + '</td>');
-                    })).click(function (e) {
-                        this_.trigger("row_click", e, model);
-                        return false;
-                    });
+                    }))
+                        .click(function (e) { this_.trigger("row_click", e, model); })
+                        .mouseenter(function (e) { this_.trigger("row_enter", e, model); })
+                        .mouseleave(function (e) { this_.trigger("row_leave", e, model); });
                 }));
 
                 return this;
@@ -210,7 +251,7 @@
                         if (predecessorModel) {
                             el = $('<div class="arrowline"><div class="arrowhead"></div></div>');
                             noOfDays = Math.round((model.get("startDate").getTime() - predecessorModel.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
-                            var noOfRows = parseInt(model.cid.substr(1), 10) - parseInt(predecessorModel.cid.substr(1), 10);
+                            var noOfRows = collection.indexOf(model) - collection.indexOf(predecessorModel);
                             el.css({ right: "100%", bottom: "100%", width: noOfDays * 23, height: noOfRows * 17 - 5 });
                             return el;
                         }
@@ -230,6 +271,17 @@
                 _.bindAll(this, "render");
                 this.options.collection.bind("change", this.render);
                 this.$el = $(this.el);
+            },
+
+            highlight: function (model) {
+                if (model) {
+                    this.$el.find('.jsgt_' + model.get("id"))
+                        .addClass("highlight")
+                        .siblings()
+                        .removeClass("highlight");
+                } else {
+                    this.$el.find('tr').removeClass("highlight");
+                }
             },
 
             render: function () {
@@ -269,13 +321,22 @@
                         currMonthEl = $('<th>' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</th>');
                         monthRow.append(currMonthEl);
                     }
-                    var el = $('<th>' + dateIterator.getDate() + '</th>');
-                    if (dateIterator.toDateString() === today.toDateString()) {
+                    var el = $('<th>' + dateIterator.getDate() + '</th>'),
+                        dateString = dateIterator.toDateString();
+                    
+                    if (today.toDateString() === dateString) {
                         el.addClass("important");
                     }
                     if (dateIterator.getDay() === 6) {
                         el.addClass("markend");
                     }
+                    this.options.collection.map(function (model) {
+                        model.get("icons").map(function (icon) {
+                            if (icon.date.toDateString() === dateString) {
+                                el.append('<div class="deadline"></div>');
+                            }
+                        });
+                    });
                     dayRow.append(el);
                     dateIterator.setDate(dateIterator.getDate() + 1);
                     currMonthSize = currMonthSize + 1;
@@ -286,7 +347,7 @@
                 this.$el.append(monthRow, dayRow);
 
                 $.fn.append.apply(this.$el, this.options.collection.map(function (model) {
-                    var row = $('<tr></tr>'),
+                    var row = $('<tr class="jsgt_' + model.get("id") + '"></tr>'),
                         elementView = new GanttElementView({
                             model: model,
                             firstDate: firstDate,
@@ -301,21 +362,38 @@
                         row.addClass("child");
                     }
 
+                    var html = "",
+                        classes = [];
+
                     while (dateIterator <= lastDate) {
-                        var el = $('<td><div class="cell ' + dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear() + '"></div></td>');
+                        classes = "";
+                        
                         if (dateIterator.getDay() === 6) {
-                            el.addClass("markend");
+                            classes += " markend";
                         }
                         if (dateIterator.getDay() === 6 || dateIterator.getDay() === 0) {
-                            el.addClass("weekend");
+                            classes += " weekend";
                         }
-                        row.append(el);
+                        html += '<td class="' + classes + '"><div class="cell ' + dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear() + '">';
+
+                        _(model.get("icons")).each(function (icon) {
+                            if (icon.date.toDateString() === dateIterator.toDateString()) {
+                                html += '<div class="icon ' + icon.type + '">' + icon.description + '</div>';
+                            }
+                        });
+
+                        html += '</div></td>';
+
                         dateIterator.setDate(dateIterator.getDate() + 1);
                     }
 
-                    row.find("." + modelDate.getDate() + "-" + modelDate.getMonth() + "-" + modelDate.getFullYear())
-                        .append(elementHolder.append(elementView.render().el))
-                        .click(function (e) { this_.trigger("row_click", e, model); });
+                    row.append(html);
+
+                    row.click(function (e) { this_.trigger("row_click", e, model); })
+                        .mouseenter(function (e) { this_.trigger("row_enter", e, model); })
+                        .mouseleave(function (e) { this_.trigger("row_leave", e, model); })
+                        .find("." + modelDate.getDate() + "-" + modelDate.getMonth() + "-" + modelDate.getFullYear())
+                        .append(elementHolder.append(elementView.render().el));
 
                     return row;
                 }));
@@ -337,7 +415,7 @@
                 this.$el.append("<b>Key</p>");
 
                 $.fn.append.apply(this.$el, _(this.options.types).map(function (type) {
-                    return $('<div><div class="color" style="background:' + type.color + '"></div>' + type.name + '</div>');
+                    return '<div><div class="color" style="background:' + type.color + '"></div>' + type.name + '</div>';
                 }));
 
                 return this;
@@ -372,19 +450,39 @@
                 this.$el = $(this.el);
 
                 var rowClick = function (e, model) {
-                    this_.trigger("row_click", e, model);
-                };
+                        this_.trigger("row_click", e, model);
+                    },
+                    rowEnter = function (e, model) {
+                        this_.dataView.highlight(model);
+                        this_.ganttView.highlight(model);
+                        this_.trigger("row_enter", e, model);
+                    },
+                    rowLeave = function (e, model) {
+                        this_.dataView.highlight();
+                        this_.ganttView.highlight();
+                        this_.trigger("row_leave", e, model);
+                    };
 
                 this.dataView.bind("row_click", rowClick);
                 this.ganttView.bind("row_click", rowClick);
+
+                this.dataView.bind("row_enter", rowEnter);
+                this.ganttView.bind("row_enter", rowEnter);
+                this.dataView.bind("row_leave", rowLeave);
+                this.ganttView.bind("row_leave", rowLeave);
             },
 
             render: function () {
+                var this_ = this;
                 this.$el.html('')
                     .append(this.dataView.render().el, this.ganttView.render().el);
                 if (this.options.displayKey) {
                     this.$el.append(this.keyView.render().el);
                 }
+                setTimeout(function () {
+                    console.log(this_.dataView.$el.outerWidth())
+                    this_.ganttView.$el.css({ marginLeft: this_.dataView.$el.outerWidth() });
+                });
                 return this;
             }
         }),
@@ -403,12 +501,13 @@
                 resources: {}
             });
 
-            var collectionOptions = {};
-            if (options.hasOwnProperty("localStorage")) {
-                collectionOptions["localStorage"] = options.localStorage;
-            }
+            collection = new GanttElementCollection(options.elements);
 
-            collection = new GanttElementCollection(options.elements, collectionOptions);
+            if (options.hasOwnProperty("localStorage")) {
+                collection.localStorage = options.localStorage;
+                collection.fetch();
+                collection.sort();
+            }
 
             ganttView = new GanttContainerView({
                 collection: collection,

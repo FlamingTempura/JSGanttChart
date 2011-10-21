@@ -5,9 +5,14 @@
 	white-space: nowrap;
 }
 
+.gantt-container {
+	overflow: auto;
+}
+
 	.gantt-container table {
 		border-spacing: 0;
 		table-layout: fixed;
+		background: white;
 	}
 
 		.gantt-container tr {	
@@ -21,12 +26,12 @@
 			padding: 2px;
 		}
 
-			.gantt-container td.markend {
+			.gantt-container .markend {
 				border-right-color: #bbb;
 			}
 
-			.gantt-container td.weekend {
-				background: #f7f7f7 !important;
+			.gantt-container .weekend {
+				background: #f7f7f7;
 			}
 
 		.gantt-container th {
@@ -36,10 +41,17 @@
 			color: red;
 		}
 
+.gantt-key {
+	position: fixed;
+	margin-top: 30px;
+}
+
 .gantt-data-table {
 	display: inline-block;
 	border-top: 1px solid #ddd;
 	border-left: 1px solid #ddd;
+	position: fixed;
+	z-index: 40;
 }
 
 	.gantt-data-table th {
@@ -57,6 +69,7 @@
 	border-top: 1px solid #ddd;
 	vertical-align: top;
 	white-space: nowrap;
+	margin-left: 480px;
 }
 	
 	.gantt-table td .cell {
@@ -99,7 +112,11 @@
 			opacity: 0.8;
 		}
 
-		tr:hover .gantt-element {
+		tr.highlight td {
+			background: yellow !important;
+		}
+
+		tr.highlight .gantt-element {
 			opacity: 1;
 		}
 
@@ -164,3 +181,33 @@
 		margin: 0 2px 0 0;
 		vertical-align: top;
 	}
+
+
+.icon {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.2) url('default.images/urgent.png') no-repeat left top;
+	border-radius: 3px;
+	z-index: 15;
+	top: 1px;
+	font-weight: bold;
+	font-size: 9px;
+	padding: 2px 3px 2px 20px;
+	margin-left: 1px;
+	color: white;
+	text-shadow: black 1px 1px 4px;
+}
+
+td, th {
+	position: relative;
+}
+
+th .deadline {
+	border-top: 3px solid red;
+	border-left: 3px solid transparent;
+	border-right: 3px solid transparent;
+	height: 0;
+	width: 0;
+	position: absolute;
+	bottom: 0;
+	left: 40%;
+}

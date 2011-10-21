@@ -4,7 +4,7 @@
 	margin-top: 50px;
 }
 
-.editor, .editor table, .editor input {
+body, table, input {
 	font-family: verdana, sans-serif;
 	font-size: 11px;
 	color: #333;
@@ -15,22 +15,11 @@
 	top: 0;
 	left: 0;
 	right: 0;
+	background: #f7f7f6;
 }
 
 .toolbar {
 	text-align: center;
-}
-
-.dialog {
-	position: fixed;
-	top: 50px;
-	left: 50px;
-	background: #f7f7f6;
-	border: 1px solid #ccc;
-	z-index: 1000;
-	padding: 3px;
-	padding-top: 50px;
-	box-shadow: 2px 2px 18px #444;
 }
 
 .fieldset th {
@@ -44,7 +33,6 @@
 }
 
 .toolbar {
-	background: #f7f7f6;
 	padding: 5px;
 }
 
@@ -72,8 +60,6 @@
 
 textarea {
 	width: 100%;
-	height: 80%;
-	min-height: 300px;
 }
 
 .gantt-container tr {

@@ -35,8 +35,17 @@
                 var this_ = this;
                 this.fieldInputs = [];
                 $.fn.append.apply(this.$el.html(""), _(this.options.fields).map(function (field) {
-                    var row = jQuery('<tr><th>' + field.name + '</th><td><input type="text" value=""></td></tr>');
-                    this_.fieldInputs.push(row.find("input"));
+                    var html = field.type === "textarea" ? '<textarea rows="6" cols="60"></textarea>' : '<input type="text" value="">',
+                        row = jQuery('<tr><th>' + field.name + '</th><td>' + html + '</td></tr>'),
+                        input = row.find("input, textarea");
+                    this_.fieldInputs.push(input);
+                    switch (field.type) {
+                        case "date":
+                            input.datepicker({
+                                dateformar: "D d M yy"
+                            });
+                            break;
+                    }
                     return row;
                 }));
                 return this;
@@ -49,11 +58,12 @@
                 });
             },
             save: function() {
-                var this_ = this;
+                var this_ = this,
+                    newsettings = {};
                 _(this.options.fields).each(function (field, i) {
-                    field.save(this_.model, this_.fieldInputs[i].val());
+                    _(newsettings).extend(field.save(this_.model, this_.fieldInputs[i].val()));
                 });
-                this.model.save();
+                this.model.save(newsettings);
             }
         }),
         
@@ -61,13 +71,22 @@
             className: "dialog",
             $el: undefined,
             initialize: function () {
+                this.dialogOptions = {
+                    autoOpen: false,
+                    show: "fade",
+                    hide: "fade"
+                };
                 this.$el = $(this.el);
             },
             show: function () {
-                this.$el.fadeIn();
+                this.$el.dialog("open");
             },
             hide: function () {
-                this.$el.fadeOut();
+                this.$el.dialog("close");
+            },
+            render: function () {
+                this.$el.dialog(this.dialogOptions);
+                return this;
             }
         }),
 
@@ -76,97 +95,114 @@
             model: undefined,
             render: function () {
                 var this_ = this,
-                    apply = function () {
-                        this_.fieldset.save();
-                    },
-                    toolbar = new ToolbarView({
-                        buttons: [
-                            {
-                                name: "Apply",
-                                action: function () {
-                                    apply.call();
-                                }
-                            },
-                            {
-                                name: "OK",
-                                action: function () {
-                                    apply.call();
-                                    this_.hide();
-                                }
-                            },
-                            {
-                                name: "Cancel",
-                                action: function () {
-                                    this_.hide();
-                                }
-                            },
-                            {
-                                name: "Delete",
-                                action: function () {
-                                    this_.model.destroy();
-                                    this_.hide();
-                                }
-                            },
-                        ]
-                    });
+                    apply = function () { this_.fieldset.save(); }
                 
+                _(this.dialogOptions).extend({
+                    buttons: {
+                        Apply: function () { apply.call(); },
+                        OK: function () {
+                            apply.call();
+                            this_.hide();
+                        },
+                        Cancel: function () { this_.hide(); },
+                        Delete: function () {
+                            this_.model.destroy();
+                            this_.hide();
+                        }
+                    },
+                    title: "Add / Edit stage",
+                    resizable: false,
+                    width: 600
+                });
+
                 this.fieldset = new FieldSetView({
                     fields: [
                         { 
                             name: "ID", 
                             load: function (model) { return model.get("id"); }, 
-                            save: function (model, value) { model.set({ id: value }); } },
+                            save: function (model, value) { 
+                                return { id: value };
+                                model.collection.sort();
+                            } },
+                        { 
+                            name: "Order", 
+                            load: function (model) { return model.get("order"); }, 
+                            save: function (model, value) { return { order: parseInt(value) }; } },
                         { 
                             name: "Name", 
                             load: function (model) { return model.get("name"); }, 
-                            save: function (model, value) { model.set({ name: value }); } },
+                            save: function (model, value) { return { name: value }; } },
+                        { 
+                            name: "Description",
+                            type: "textarea",
+                            load: function (model) { return model.get("description"); }, 
+                            save: function (model, value) { return { description: value }; } },
                         { 
                             name: "Start date", 
+                            type: "date",
                             load: function (model) { return model.get("startDate"); }, 
-                            save: function (model, value) { model.set({ startDate: value ? new Date(value) : undefined }); } },
+                            save: function (model, value) { return { startDate: value ? new Date(value) : undefined }; } },
                         { 
                             name: "End date", 
+                            type: "date",
                             load: function (model) { return model.get("endDate"); }, 
-                            save: function (model, value) { model.set({ endDate: value ? new Date(value) : undefined }); } },
+                            save: function (model, value) { return { endDate: value ? new Date(value) : undefined }; } },
                         { 
                             name: "Slack end date", 
+                            type: "date",
                             load: function (model) { return model.get("slackEndDate"); }, 
-                            save: function (model, value) { model.set({ slackEndDate: value ? new Date(value) : undefined }); } },
+                            save: function (model, value) { return { slackEndDate: value ? new Date(value) : undefined }; } },
                         { 
                             name: "Type", 
                             load: function (model) { return model.get("type"); }, 
-                            save: function (model, value) { model.set({ type: value }); } },
+                            save: function (model, value) { return { type: value }; } },
+                        { 
+                            name: "Parent", 
+                            load: function (model) { return model.get("parentElement"); }, 
+                            save: function (model, value) { console.log({ parentElement: value.trim() === "" ? undefined : value.trim() });return { parentElement: value.trim() === "" ? undefined : value.trim() }; } },
                         { 
                             name: "Percentage done", 
                             load: function (model) { return model.get("percentageDone"); }, 
-                            save: function (model, value) { model.set({ percentageDone: parseInt(value) }); } },
+                            save: function (model, value) { return { percentageDone: value === undefined ? undefined : parseInt(value) }; } },
                         { 
                             name: "Hours expected", 
-                            load: function (model) { return model.get("hoursExpected"); }, 
-                            save: function (model, value) { model.set({ hoursExpected: parseInt(value) }); } },
+                            load: function (model) { return model.get("estimatedHours"); }, 
+                            save: function (model, value) { return { estimatedHours: value === undefined ? undefined : parseInt(value) }; } },
                         { 
                             name: "Resource (comma separated)", 
                             load: function (model) { return (model.get("resources") || []).join(", "); }, 
                             save: function (model, value) { 
-                                model.set({ resources: _(value.split(",")).chain()
+                                return { resources: _(value.split(",")).chain()
                                     .map(function (r) { return r.trim(); })
-                                    .reject(function (r) { return r === ""; }).value() });
+                                    .reject(function (r) { return r === ""; }).value() };
                             }
                         },
                         { 
                             name: "Predecessors (dependancies,<br />comma separated)", 
                             load: function (model) { return (model.get("predecessors") || []).join(", "); }, 
                             save: function (model, value) { 
-                                model.set({ predecessors: _(value.split(",")).chain()
+                                return { predecessors: _(value.split(",")).chain()
                                     .map(function (r) { return r.trim(); })
-                                    .reject(function (r) { return r === ""; }).value() });
+                                    .reject(function (r) { return r === ""; }).value() };
+                            }
+                        },
+                        { 
+                            name: "Icons",
+                            type: "textarea",
+                            load: function (model) { return JSON.stringify(model.get("icons") || []); }, 
+                            save: function (model, value) { 
+                                var icons = JSON.parse(value);
+                                _(icons).each(function (icon) {
+                                    icon.date = new Date(icon.date);
+                                });
+                                return { icons: icons }; 
                             }
                         }
                     ]
                 });
 
-                this.$el.html("").append(this.fieldset.render().el, toolbar.render().el).hide();
-                return this;
+                this.$el.html("").append(this.fieldset.render().el);
+                return DialogView.prototype.render.apply(this);
             },
             load: function (model) {
                 this.model = model;
@@ -211,7 +247,7 @@
 
                 this.$el.html("").append(textarea, toolbar.render().el).hide();
 
-                return this;
+                return DialogView.prototype.render.apply(this);
             },
             val: function () { return $.fn.val.apply(this.textarea, arguments); }
         }),
@@ -269,8 +305,9 @@
                 });
             },
             render: function () {
-                this.$el.html("").append(this.gantt.render().el, this.toolbar.render().el, 
-                    this.editDialog.render().el, this.jsonDialog.render().el);
+                this.$el.html("").append(this.gantt.render().el, this.toolbar.render().el);
+                this.editDialog.render();
+                this.jsonDialog.render();
                 return this;
             }
         }),
