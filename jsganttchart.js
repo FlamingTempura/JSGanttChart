@@ -331,11 +331,13 @@
                         el.addClass("markend");
                     }
                     this.options.collection.map(function (model) {
-                        model.get("icons").map(function (icon) {
-                            if (icon.date.toDateString() === dateString) {
-                                el.append('<div class="deadline"></div>');
-                            }
-                        });
+                        if (model.has("icons")) {
+                            model.get("icons").map(function (icon) {
+                                if (icon.date.toDateString() === dateString) {
+                                    el.append('<div class="deadline"></div>');
+                                }
+                            });
+                        }
                     });
                     dayRow.append(el);
                     dateIterator.setDate(dateIterator.getDate() + 1);
