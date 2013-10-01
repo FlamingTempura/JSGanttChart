@@ -1,16 +1,26 @@
 JS Gantt Chart
 ==============
 
-Simply put, this is a JavaScript Gantt Chart generator. It generates a gantt chart from JSON. There is also a limited UI for creating a Gantt Chart.
+Simply put, this is a JavaScript Gantt Chart generator. It generates a gantt chart from JSON.
 
-Requires
---------
+![ScreenShot](https://raw.github.com/FlamingTempura/JSGanttChart/master/gantt.png)
+
+Editor
+------
+
+There is also a limited UI for creating and editing Gantt Chart.
+
+
+Requirements
+------------
 * jQuery
 * Backbone.js
 * Underscore.js
 
 Example
 -------
+
+To produce the gantt chart as shown in the image above:
 
 ```javascript
 var gantt = JSGanttChart.create({
