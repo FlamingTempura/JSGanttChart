@@ -4,6 +4,8 @@
 
     var root = window,
 
+        showWeekly = false,
+
         jsgtThis,
 
         ganttView,
@@ -181,10 +183,14 @@
                 $.fn.append.apply(this.$el, this.options.collection.map(function (model) {
                     var row = $('<tr class="jsgt_' + model.get("id") + '"></tr>');
                     return $.fn.append.apply(row, _(this_.options.fields).map(function (field) {
-                        var str = (model.has(field) ? model.get(field) : '');
-                        if (field === "name" && model.get("parentElement") && model.get("parentElement").trim()) {
-                            str = "&nbsp;&nbsp;&nbsp;&nbsp;" + str;
-                            row.addClass("child");
+                        var str = (model.has(field) ? model.get(field) : ''),
+                            title = "";
+                        if (field === "name") {
+                            if (model.get("parentElement") && model.get("parentElement").trim()) {
+                                str = "&nbsp;&nbsp;&nbsp;&nbsp;" + str;
+                                row.addClass("child");
+                            }
+                            title = model.get("description") || "";
                         } else if (field === "resources") {
                             str = _(model.get(field)).reduce(function (memo, resource) {
                                 return (memo ? memo + ", " : "") + this_.options.resources[resource];
@@ -198,7 +204,7 @@
                                 str = '<div class="in-progress">In progress: ' + str + '%</div>';
                             }
                         }
-                        return $('<td>' + (str || "&nbsp") + '</td>');
+                        return $('<td title="' + title + '">' + (str || "&nbsp") + '</td>');
                     }))
                         .click(function (e) { this_.trigger("row_click", e, model); })
                         .mouseenter(function (e) { this_.trigger("row_enter", e, model); })
@@ -224,9 +230,10 @@
                     model = this.options.model,
                     noOfDays = Math.round((model.get("endDate").getTime() - model.get("startDate").getTime()) / (24 * 60 * 60 * 1000)),
                     dayFromStart = Math.round((model.get("startDate").getTime() - this.options.firstDate.getTime()) / (24 * 60 * 60 * 1000)),
-                    el;
+                    el,
+                    width = showWeekly ? Math.ceil(noOfDays / 7) * 23 - 3 : noOfDays * 23 - 3;
 
-                this.$el.css({ width: noOfDays * 23 - 3 });
+                this.$el.css({ width: width });
 
                 if (model.has("type") && this.options.types.hasOwnProperty(model.get("type"))) {
                     this.$el.css({ borderBottomColor: this.options.types[model.get("type")].color });
@@ -241,7 +248,8 @@
                 if (model.has("slackEndDate")) {
                     el = $('<div class="slack"><div class="slack-end"></div></div>');
                     noOfDays = Math.round((model.get("slackEndDate").getTime() - model.get("endDate").getTime()) / (24 * 60 * 60 * 1000));
-                    el.css({ left: "100%", width: noOfDays * 23 });
+                    width = showWeekly ? Math.ceil(noOfDays / 7) * 23 : noOfDays * 23;
+                    el.css({ left: "100%", width: width });
                     this.$el.append(el);
                 }
 
@@ -307,7 +315,8 @@
                     dayRow = $('<tr></tr>'),
                     currMonth,
                     currMonthSize,
-                    currMonthEl;
+                    currMonthEl,
+                    currWeek;
 
                 dateIterator = new Date(firstDate.getTime());
                 // Populate days
@@ -321,7 +330,23 @@
                         currMonthEl = $('<th>' + monthNames[dateIterator.getMonth()] + ' ' + dateIterator.getFullYear() + '</th>');
                         monthRow.append(currMonthEl);
                     }
-                    var el = $('<th>' + dateIterator.getDate() + '</th>'),
+
+                    var week = dateIterator.getWeek(),
+                        day = dateIterator.getDate(),
+                        n;
+                    
+                    if (showWeekly) {
+                        if (currWeek === week) {
+                            dateIterator.setDate(dateIterator.getDate() + 1);
+                            continue;
+                        }
+                        currWeek = week;
+                        n = week;
+                    } else {
+                        n = day;
+                    }
+
+                    var el = $('<th>' + n + '</th>'),
                         dateString = dateIterator.toDateString();
                     
                     if (today.toDateString() === dateString) {
@@ -363,18 +388,36 @@
                     }
 
                     var html = "",
-                        classes = [];
+                        classes = "",
+                        dateClasses = dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear(),
+                        currWeek;
 
+                    
                     while (dateIterator <= lastDate) {
-                        classes = "";
                         
-                        if (dateIterator.getDay() === 6) {
-                            classes += " markend";
+                        classes = "";
+
+                        if (showWeekly) {
+                            var week = dateIterator.getWeek();
+                            if (currWeek === week) {
+                                dateIterator.setDate(dateIterator.getDate() + 1);
+                                dateClasses += " " + dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear();
+                                continue;
+                            }
+                            currWeek = week;
+
+                        } else {
+                            classes = "";
+                            if (dateIterator.getDay() === 6) {
+                                classes += " markend";
+                            }
+                            if (dateIterator.getDay() === 6 || dateIterator.getDay() === 0) {
+                                classes += " weekend";
+                            }
                         }
-                        if (dateIterator.getDay() === 6 || dateIterator.getDay() === 0) {
-                            classes += " weekend";
-                        }
-                        html += '<td class="' + classes + '"><div class="cell ' + dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear() + '">';
+                        
+                        
+                        html += '<td class="' + classes + '"><div class="cell ' + dateClasses + '">';
 
                         _(model.get("icons")).each(function (icon) {
                             if (icon.date.toDateString() === dateIterator.toDateString()) {
@@ -385,6 +428,7 @@
                         html += '</div></td>';
 
                         dateIterator.setDate(dateIterator.getDate() + 1);
+                        dateClasses = dateIterator.getDate() + "-" + dateIterator.getMonth() + "-" + dateIterator.getFullYear();
                     }
 
                     row.append(html);
@@ -496,7 +540,7 @@
 
             _(options).defaults({
                 displayKey: true,
-                fields: [ "name", "resources", "percentageDone", "estimatedHours" ],
+                fields: [ "name", /*"resources",*/ "percentageDone", "estimatedHours" ],
                 types: {},
                 resources: {}
             });
@@ -563,3 +607,40 @@
     });
 
 }(jQuery, _, Backbone));
+
+
+
+/**
+ * Returns the week number for this date.  dowOffset is the day of week the week
+ * "starts" on for your locale - it can be from 0 to 6. If dowOffset is 1 (Monday),
+ * the week returned is the ISO 8601 week number.
+ * @param int dowOffset
+ * @return int
+ */
+Date.prototype.getWeek = function (dowOffset) {
+/*getWeek() was developed by Nick Baicoianu at MeanFreePath: http://www.meanfreepath.com */
+
+    dowOffset = typeof(dowOffset) == 'int' ? dowOffset : 0; //default dowOffset to zero
+    var newYear = new Date(this.getFullYear(),0,1);
+    var day = newYear.getDay() - dowOffset; //the day of week the year begins on
+    day = (day >= 0 ? day : day + 7);
+    var daynum = Math.floor((this.getTime() - newYear.getTime() - 
+    (this.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1;
+    var weeknum;
+    //if the year starts before the middle of a week
+    if(day < 4) {
+        weeknum = Math.floor((daynum+day-1)/7) + 1;
+        if(weeknum > 52) {
+            nYear = new Date(this.getFullYear() + 1,0,1);
+            nday = nYear.getDay() - dowOffset;
+            nday = nday >= 0 ? nday : nday + 7;
+            /*if the next year starts before the middle of
+              the week, it is week #1 of that year*/
+            weeknum = nday < 4 ? 1 : 53;
+        }
+    }
+    else {
+        weeknum = Math.floor((daynum+day-1)/7);
+    }
+    return weeknum;
+};
