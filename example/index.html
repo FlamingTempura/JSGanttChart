@@ -1,0 +1,24 @@
+<html>
+<head>
+	<title>JSGanttChart Example</title>
+	<link rel="stylesheet" href="../themes/default.css">
+</head>
+<body>
+	<div id="container"></div>
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.2.0/underscore-min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.3/backbone-min.js"></script>
+	<script src="../jsganttchart.js"></script>
+	<script>
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'gantt.json', true);
+		xhr.responseType = 'json';
+		xhr.onload = function() {
+			console.log(xhr.response)
+			var gantt = new JSGanttChart(xhr.response);
+			document.getElementById('container').appendChild(gantt.render().el);
+		};
+		xhr.send();
+	</script>
+</body>
+</html>

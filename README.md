@@ -1,5 +1,6 @@
-JS Gantt Chart
-==============
+# JSGanttChart
+
+Gantt chart library and editor for browsers
 
 Simply put, this is a JavaScript Gantt Chart generator. It generates a gantt chart from JSON.
 
